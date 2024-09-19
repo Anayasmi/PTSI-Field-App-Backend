@@ -2,21 +2,19 @@ package com.ptsi.report.model.response;
 
 import lombok.*;
 
-import java.time.LocalDate;
+import java.util.List;
 
 @Getter
 @Setter
 @AllArgsConstructor
 @NoArgsConstructor
 @Builder
-public class OpeningExpenseResponse {
+public class OpeningExpenseResponses {
 
-    private Double openingId;
     private Double staffId;
     private String staffName;
-    private Integer check;
-    private LocalDate openingDate;
     private Double openingBalance;
-    private LocalDate closingDate;
     private Double closingBalance;
+    private Integer check;
+    private List<OpeningExpenses> openingExpensesList;
 }

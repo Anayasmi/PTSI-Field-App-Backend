@@ -36,17 +36,16 @@ public class ExpenseReportController {
 
     @GetMapping
     public ResponseEntity < Resource > fetchExpenseReport (
-            @RequestParam @DateTimeFormat ( iso = DateTimeFormat.ISO.DATE ) LocalDate fromDate ,
-            @RequestParam @DateTimeFormat ( iso = DateTimeFormat.ISO.DATE ) LocalDate toDate ,
+            @RequestParam Integer year,@RequestParam Integer month,
             @RequestParam Float staffId , @RequestParam StaffType staffType ) {
 
-        log.info( "Fetch expense report from {} to {}",fromDate,toDate );
+        log.info( "Fetch expense report from {} to {}",month,year );
 
-        List < Map < String, Object > > report = expenseReportService.fetchExpenseReport ( String.valueOf ( fromDate ) , String.valueOf ( toDate ) , staffId , staffType );
+        List < Map < String, Object > > report = expenseReportService.fetchExpenseReport ( year,month , staffId , staffType );
 
         String fileName = ( staffType == StaffType.PRO_CO ) ? "project_coordinator_sheet_" + staffId + ".xlsx" : "staff_sheet_" + staffId + ".xlsx";
         log.info( "Excel formatting started");
-        ByteArrayInputStream byteArrayInputStream = StaffSheetExcel.dataToExcel ( report );
+        ByteArrayInputStream byteArrayInputStream = StaffSheetExcel.dataToExcel ( report,staffType );
         assert byteArrayInputStream != null;
         InputStreamResource file = new InputStreamResource ( byteArrayInputStream );
         return ResponseEntity.ok ( ).header ( HttpHeaders.CONTENT_DISPOSITION , "attachment; filename=" + fileName )
@@ -57,11 +56,11 @@ public class ExpenseReportController {
     @GetMapping("expense-sheet")
     public ResponseEntity < Resource > downloadExpenseSheet (
             @RequestParam Integer year,@RequestParam Integer month,
-            @RequestParam Integer staffId ) {
+            @RequestParam Integer staffId,@RequestParam Double openingBalance ) {
 
         log.info( "Fetch expense report where month is {} and year is {}",month,year );
 
-        List < ExpenseSheetResponse > report = expenseReportService.fetchExpenseSheet ( year,month, staffId);
+        List < ExpenseSheetResponse > report = expenseReportService.fetchExpenseSheet ( year,month, staffId,openingBalance);
 
         String fileName =  "project_coordinator_sheet_" + staffId + ".xlsx";
         log.info( "Excel formatting started");

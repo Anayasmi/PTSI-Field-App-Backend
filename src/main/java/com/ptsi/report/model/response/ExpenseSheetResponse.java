@@ -16,7 +16,7 @@ public class ExpenseSheetResponse {
     private LocalDate date;
     private Integer day;
     private Double openingExpense;
-    private Integer advance;
+    private Double advance;
     private Double closingExpense;
     private Double totalExpense;
     private Double totalAdvance;

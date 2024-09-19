@@ -42,11 +42,14 @@ public class ProjectDataServiceImpl implements ProjectDataService {
     @Override
     public void updateProjectData ( ProjectRequest projectRequest ) {
 
-        ProjectData projectData = projectDataRepository.findById ( projectRequest.getProjectId () ).orElseThrow ();
+        for(Long projectId:projectRequest.getProjectIds()) {
 
-        projectData.setProjectCoordinator ( projectRequest.getProjectCoordinator () );
-        projectData.setUpdatedBy ( projectRequest.getUpdatedBy () );
-        projectData.setUpdatedDate ( LocalDate.now ( ).format ( DateTimeFormatter.ofPattern("M/dd/yyyy" ) ));
-        projectDataRepository.save ( projectData );
+            ProjectData projectData = projectDataRepository.findById( projectId ).orElseThrow( );
+
+            projectData.setProjectCoordinator( projectRequest.getProjectCoordinator( ) );
+            projectData.setUpdatedBy( projectRequest.getUpdatedBy( ) );
+            projectData.setUpdatedDate( LocalDate.now( ).format( DateTimeFormatter.ofPattern( "M/dd/yyyy" ) ) );
+            projectDataRepository.save( projectData );
+        }
     }
 }

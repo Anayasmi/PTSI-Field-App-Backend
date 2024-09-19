@@ -95,26 +95,26 @@ public class ExpenseSheetExcel {
                 cellNumber.set( cellNumber.get( ) + 1 );
 
                 cell.set( row.get( ).createCell( cellNumber.get( ) ) );
-                if ( staff.getOpening() != 0.0 ) {
+                if ( staff.getOpening() != null && staff.getOpening( ) != 0.0 ) {
                     cell.get( ).setCellValue( staff.getOpening( ) );
 
                 }
 
                 cellNumber.set( cellNumber.get( ) + 1 );
                 cell.set( row.get( ).createCell( cellNumber.get( ) ) );
-                if ( staff.getReceipt() != 0.0 ) {
+                if ( staff.getReceipt() != null && staff.getReceipt() != 0.0 ) {
                     cell.get( ).setCellValue( staff.getReceipt( ) );
                 }
 
                 cellNumber.set( cellNumber.get( ) + 1 );
                 cell.set( row.get( ).createCell( cellNumber.get( ) ) );
-                if ( staff.getExpense() != 0.0 ) {
+                if ( staff.getExpense() != null && staff.getExpense() != 0.0 ) {
                     cell.get( ).setCellValue( staff.getExpense( ) );
                 }
 
                 cellNumber.set( cellNumber.get( ) + 1 );
                 cell.set( row.get( ).createCell( cellNumber.get( ) ) );
-                if ( staff.getClosing() != 0.0 ) {
+                if ( staff.getClosing() != null && staff.getClosing() != 0.0 ) {
                     cell.get( ).setCellValue( staff.getClosing( ) );
                 }
 

@@ -15,9 +15,14 @@ public class ExpenseSheetDto {
     private String staffName;
     private Double staffId;
     private LocalDate date;
-    private Double openingExpense;
     private Double totalActualExpense;
-    private Integer approvedAmount;
+    private Double approvedAmount;
+    private Integer approvedBy;
+    private Double amountCash;
+    private LocalDate openingDate;
+    private LocalDate closingDate;
+    private Double openingBalance;
+    private Double closingBalance;
     private Double tea;
     private Double telephone;
     private Double petrol;

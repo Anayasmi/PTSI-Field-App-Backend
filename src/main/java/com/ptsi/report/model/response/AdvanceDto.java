@@ -5,15 +5,13 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 
+import java.time.LocalDate;
+
 @Getter
 @Setter
 @AllArgsConstructor
 @NoArgsConstructor
-public class StaffResponse {
-
-    private Float staffId;
-    private String employeeId;
-    private String name;
-    private String mobileNo;
-    private String email;
+public class AdvanceDto {
+    private LocalDate date;
+    private Integer advanceAmount;
 }

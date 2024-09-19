@@ -1,6 +1,9 @@
 package com.ptsi.report.model.request;
 
+import jakarta.persistence.Column;
 import lombok.*;
+
+import java.time.LocalDate;
 
 @Getter
 @Setter
@@ -8,10 +11,15 @@ import lombok.*;
 @NoArgsConstructor
 @Builder
 public class OpeningExpenseRequest {
-    private Integer expenseId;
-    private Integer month;
     private Integer year;
+    private Integer month;
+    private Integer openingId;
+    private LocalDate openingDate;
+    private LocalDate closingDate;
+    private Float openingBalance;
     private Float staffId;
-    private Float openingExpense;
+    private Float projectCoordinator;
     private Integer updatedBy;
+    private Integer additionalStaff;
+    private Integer autoCreated;
 }

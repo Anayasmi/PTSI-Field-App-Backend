@@ -5,13 +5,15 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 
+import java.util.List;
+
 @Getter
 @Setter
 @AllArgsConstructor
 @NoArgsConstructor
 public class ProjectRequest {
 
-    private Long projectId;
+    private List<Long> projectIds;
     private Float projectCoordinator;
     private Integer updatedBy;
 }

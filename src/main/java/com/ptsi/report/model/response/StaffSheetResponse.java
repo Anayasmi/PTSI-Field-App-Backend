@@ -12,7 +12,7 @@ public class StaffSheetResponse {
     private String staffName;
     private Double staffId;
     private Double opening;
-    private Integer receipt;
+    private Double receipt;
     private Double expense;
     private Double closing;
     private Double tea;

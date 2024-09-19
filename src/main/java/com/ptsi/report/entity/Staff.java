@@ -88,19 +88,7 @@ public class Staff {
     @Column ( name = "AccountBalance" )
     private Float accountBalance;
 
-    @Column ( name = "ProjectCoordinator" )
-    private Float projectCoordinator;
-
-    @Column ( name = "Tea" )
-    private Float tea;
-
-    @Column ( name = "Telephone" )
-    private Float telephone;
-
-    @Column ( name = "Petrol" )
-    private Float petrol;
-
     public StaffResponse toDto ( ) {
-        return new StaffResponse ( staffId , employeeId , firstName.trim ( ).concat ( " " ).concat ( lastName ).trim ( ) , mobileNo , email , projectCoordinator , tea , telephone , petrol );
+        return new StaffResponse ( staffId , employeeId , firstName.trim ( ).concat ( " " ).concat ( lastName ).trim ( ) , mobileNo , email );
     }
 }

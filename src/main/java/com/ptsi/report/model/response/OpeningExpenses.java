@@ -9,12 +9,9 @@ import java.time.LocalDate;
 @AllArgsConstructor
 @NoArgsConstructor
 @Builder
-public class OpeningExpenseResponse {
+public class OpeningExpenses {
 
     private Double openingId;
-    private Double staffId;
-    private String staffName;
-    private Integer check;
     private LocalDate openingDate;
     private Double openingBalance;
     private LocalDate closingDate;

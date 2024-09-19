@@ -9,6 +9,7 @@ public enum StaffExpense {
     PROJECT_NAME("Project"),
     FLOOR_LEVEL("Floor Level"),
     CITY("City"),
+    PROJECT_COORDINATOR("Project Coordinator"),
     FIELD_STAFF_NAME("Field Staff Name"),
     ACTUAL_EXPENSE("Actual Expense"),
     DPR_STATUS("DPR Status"),

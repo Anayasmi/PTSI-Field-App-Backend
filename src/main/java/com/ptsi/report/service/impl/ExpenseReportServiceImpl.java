@@ -1,50 +1,53 @@
 package com.ptsi.report.service.impl;
 
 import com.ptsi.report.constant.StaffType;
-import com.ptsi.report.entity.Staff;
 import com.ptsi.report.model.response.*;
 import com.ptsi.report.repository.ExpenseReportRepository;
-import com.ptsi.report.repository.StaffRepository;
 import com.ptsi.report.service.ExpenseReportService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
 import java.sql.Date;
 import java.time.LocalDate;
-import java.time.LocalTime;
+import java.time.temporal.ChronoUnit;
 import java.util.*;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 @Service
 @RequiredArgsConstructor
 public class ExpenseReportServiceImpl implements ExpenseReportService {
 
     private final ExpenseReportRepository expenseReportRepository;
-    private final StaffRepository staffRepository;
 
-    public List< Map< String, Object > > fetchExpenseReport( String fromDate, String toDate, Float staffId, StaffType staffType ) {
+    public List< Map< String, Object > > fetchExpenseReport( Integer year,Integer month, Float staffId, StaffType staffType ) {
 
-        fromDate = fromDate + " 00:00:00.000";
-        toDate = toDate + " 23:59:59.000";
+        LocalDate localDate=LocalDate.of( year,month,1 );
+        String firstDayOfMonth = localDate + " 00:00:00.000";
+        String lastDayOfMonth = localDate.withDayOfMonth(localDate.lengthOfMonth()) + " 23:59:59.000";
         String staffName = String.valueOf( staffId );
-        if ( staffType == StaffType.PRO_CO ) {
-            List< Float > ids = staffRepository.findByProjectCoordinator( Float.valueOf( staffId ) ).stream( ).map( Staff::getStaffId ).distinct( ).collect( Collectors.toList( ) );
-            staffName = ( ids.size( ) == 0 ) ? null : ids.stream( ).map( String::valueOf ).collect( Collectors.joining( "," ) );
-        }
-        return expenseReportRepository.fetchExpenseReport( fromDate, toDate, staffName, staffType );
+        return expenseReportRepository.fetchExpenseReport( firstDayOfMonth, lastDayOfMonth, staffName, staffType );
     }
 
-    public List< ExpenseSheetResponse > fetchExpenseSheet( Integer year, Integer month, Integer staffId ) {
+    public List< ExpenseSheetResponse > fetchExpenseSheet( Integer year, Integer month, Integer staffId,Double openingBalance ) {
 
         LocalDate firstDayOfMonth = LocalDate.of(year, month, 1);
 
         LocalDate lastDayOfMonth = firstDayOfMonth.withDayOfMonth(firstDayOfMonth.lengthOfMonth());
 
-        List< Map< String, Object > > openingExpenseList = expenseReportRepository.fetchExpenseSheet( firstDayOfMonth, lastDayOfMonth, staffId, year,month );
+        List<Map<String,Object>> advanceProCo= expenseReportRepository.fetchAdvanceForProCo( firstDayOfMonth,lastDayOfMonth,staffId );
+
+        List<AdvanceDto> advanceDtoList=advanceProCo.stream( ).map( e ->new AdvanceDto( (( Date ) e.get( "date" )).toLocalDate(),( ( Integer ) e.get( "advanceAmount" ) ))).toList( );
+
+        List< Map< String, Object > > openingExpenseList = expenseReportRepository.fetchExpenseSheet( year, month, staffId );
 
         List< ExpenseSheetDto > expenseSheetDtos = convertToDto( openingExpenseList );
 
-        return convert( expenseSheetDtos, Double.valueOf( staffId ) );
+
+        List<LocalDate> localDates = Stream.iterate(firstDayOfMonth, date -> date.plusDays(1))
+                .limit( ChronoUnit.DAYS.between(firstDayOfMonth, lastDayOfMonth) + 1)  // +1 to include the end date
+                .toList( );
+        return convert( expenseSheetDtos,advanceDtoList,localDates,openingBalance );
     }
 
     @Override
@@ -54,21 +57,22 @@ public class ExpenseReportServiceImpl implements ExpenseReportService {
 
         LocalDate lastDayOfMonth = firstDayOfMonth.withDayOfMonth(firstDayOfMonth.lengthOfMonth());
 
-        List< Map< String, Object > > openingExpenseList = expenseReportRepository.fetchExpenseSheet( firstDayOfMonth, lastDayOfMonth, staffId, year,month );
+        List<Map<String,Object>> advanceProCo= expenseReportRepository.fetchAdvanceForProCo( firstDayOfMonth,lastDayOfMonth,staffId );
+
+        List<AdvanceDto> advanceDtoList=advanceProCo.stream( ).map( e ->new AdvanceDto( (( Date ) e.get( "date" )).toLocalDate(),( ( Integer ) e.get( "advanceAmount" ) ))).toList( );
+
+        List< Map< String, Object > > openingExpenseList = expenseReportRepository.fetchExpenseSheet( year, month, staffId );
 
         List< ExpenseSheetDto > expenseSheetDtos = convertToDto( openingExpenseList );
 
-        return convert( expenseSheetDtos, Double.valueOf( staffId ) );
+        return convert( expenseSheetDtos,advanceDtoList,new ArrayList<>(),0.0 );
     }
 
-    List< ExpenseSheetResponse > convert( List< ExpenseSheetDto > expenseSheetDtos, Double staffId ) {
+    List< ExpenseSheetResponse > convert( List< ExpenseSheetDto > expenseSheetDtos,List<AdvanceDto> advanceDtoList,List<LocalDate> localDates,Double openingBalance ) {
 
         List< ExpenseSheetResponse > expenseSheetResponses = new ArrayList<>( );
-        List< LocalDate > dates = expenseSheetDtos.stream( ).map( ExpenseSheetDto::getDate ).distinct( ).sorted( ).collect( Collectors.toList( ) );
-        List< ExpenseSheetDto > expenseSheetDtoProCo = expenseSheetDtos.stream( ).filter( e -> Objects.equals( e.getStaffId( ), staffId ) ).collect( Collectors.toList( ) );
-        List< ExpenseSheetDto > expenseSheetDtoStaff = expenseSheetDtos;
-        expenseSheetDtoStaff.removeAll( expenseSheetDtoProCo );
-        for ( LocalDate localDate : dates ) {
+        List< ExpenseSheetDto > expenseSheetDtoStaff = setMissingDateData(expenseSheetDtos,localDates);
+        for ( LocalDate localDate : localDates ) {
             List< ExpenseSheetDto > expenseSheetDtoList = expenseSheetDtoStaff.stream( ).filter( e -> e.getDate( ).equals( localDate ) ).collect( Collectors.toList( ) );
             LocalDate previousDate=localDate.minusDays( 1 );
             ExpenseSheetResponse expenseSheet=new ExpenseSheetResponse(  );
@@ -86,31 +90,34 @@ public class ExpenseReportServiceImpl implements ExpenseReportService {
                 staffSheetResponseList.add( StaffSheetResponse.builder( )
                         .staffName( expense.getStaffName( ) )
                         .staffId( expense.getStaffId() )
-                        .opening( ( localDate.getDayOfMonth( ) == 1 ) ? expense.getOpeningExpense( ) : staffSheet.getClosing() )
+                        .opening( ( localDate.getDayOfMonth( ) == 1 ) ? expense.getOpeningBalance( ) : staffSheet.getClosing() )
                         .receipt( expense.getApprovedAmount( ) )
-                        .expense( expense.getTotalActualExpense( ) )
-                        .closing( ((( localDate.getDayOfMonth( ) == 1 ) ? expense.getOpeningExpense( ) : staffSheet.getClosing() ) + expense.getApprovedAmount( ) ) - expense.getTotalActualExpense( ) )
+                        .expense( expense.getTotalActualExpense( ) + expense.getAmountCash() )
+                        .closing( ((( localDate.getDayOfMonth( ) == 1 ) ? expense.getOpeningBalance( ) : staffSheet.getClosing() ) + expense.getApprovedAmount( ) ) - (expense.getTotalActualExpense( )+expense.getAmountCash()) )
                         .tea( expense.getTea() )
                         .petrol( expense.getPetrol() )
                         .telephone( expense.getTelephone() )
                         .build( ) );
             });
-            ExpenseSheetDto sheetDto = expenseSheetDtoProCo.stream( ).filter( e -> e.getDate( ).equals( localDate ) ).toList( ).get( 0 );
+            AdvanceDto advanceDto = advanceDtoList.stream( ).filter( e -> e.getDate( ).equals( localDate ) ).toList( ).get( 0 );
 
             Double closingExpense = finalExpenseSheet.getClosingExpense();
             Double receiptExpense = staffSheetResponseList.stream().mapToDouble( StaffSheetResponse::getReceipt ).sum();
-            Double openingExpense=( localDate.getDayOfMonth( ) == 1 ) ? sheetDto.getOpeningExpense( ) : closingExpense;
+            Double openingExpense=( localDate.getDayOfMonth( ) == 1 ) ? openingBalance : closingExpense;
             expenseSheetResponses.add( ExpenseSheetResponse.builder( )
                     .day( localDate.getDayOfMonth( ) )
                     .date( localDate )
                     .openingExpense( openingExpense )
-                    .advance(  sheetDto.getApprovedAmount( ) )
-                    .closingExpense( (openingExpense+sheetDto.getApprovedAmount())-receiptExpense )
+                    .advance( Double.valueOf( advanceDto.getAdvanceAmount( ) ) )
+                    .closingExpense( (openingExpense+advanceDto.getAdvanceAmount())-receiptExpense )
                     .totalExpense( staffSheetResponseList.stream().mapToDouble( StaffSheetResponse::getExpense ).sum() )
                     .totalAdvance( staffSheetResponseList.stream().mapToDouble( StaffSheetResponse::getReceipt ).sum() )
-                    .tea( sheetDto.getTea() )
-                    .petrol( sheetDto.getPetrol() )
-                    .telephone( sheetDto.getTelephone() )
+//                    .tea( sheetDto.getTea() )
+//                    .petrol( sheetDto.getPetrol() )
+//                    .telephone( sheetDto.getTelephone() )
+                    .tea(0.0)
+                    .petrol( 0.0 )
+                    .telephone( 0.0 )
                     .staffSheetResponseList( staffSheetResponseList.stream().sorted( Comparator.comparingDouble( StaffSheetResponse::getStaffId ) )
                             .collect(Collectors.toList()) )
                     .build( ) );
@@ -118,17 +125,60 @@ public class ExpenseReportServiceImpl implements ExpenseReportService {
         return expenseSheetResponses.stream( ).sorted(Comparator.comparingInt( ExpenseSheetResponse::getDay )).collect( Collectors.toList());
     }
 
+
+
     public List< ExpenseSheetDto > convertToDto( List< Map< String, Object > > list ) {
         return list.stream( ).map( e -> ExpenseSheetDto.builder( )
                 .staffName( ( String ) e.get( "staffName" ) )
                 .staffId( ( Double ) e.get( "staffId" ) )
+                .approvedBy( ( Integer ) e.get( "approvedBy" ) )
+                .amountCash( ( Double ) e.get( "amountCash" ) )
                 .date( (( Date ) e.get( "date" )).toLocalDate() )
-                .approvedAmount( ( Integer ) e.get( "approvedAmount" ) )
+                .openingDate( (( Date ) e.get( "openingDate" )).toLocalDate() )
+                .closingDate( (( Date ) e.get( "closingDate" )).toLocalDate() )
+                .openingBalance( ( Double ) e.get( "openingBalance" ) )
+                .closingBalance( ( Double ) e.get( "closingBalance" ) )
+                .approvedAmount( ( Double ) e.get( "approvedAmount" ) )
                 .totalActualExpense( ( Double ) e.get( "totalActualExpense" ) )
-                .openingExpense( ( Double ) e.get( "openingExpense" ) )
                 .tea( ( Double ) e.get( "tea" ) )
                 .telephone( ( Double ) e.get( "telephone" ) )
                 .petrol( ( Double ) e.get( "petrol" ) )
                 .build( ) ).collect( Collectors.toList( ) );
+    }
+
+    List< ExpenseSheetDto > setMissingDateData(List< ExpenseSheetDto > expenseSheetDtos,List<LocalDate> localDates){
+        List< ExpenseSheetDto > sheetDto=new ArrayList <>(  );
+        List<Double> staffIds = expenseSheetDtos.stream().map( ExpenseSheetDto::getStaffId ).distinct().toList();
+
+        for ( Double staffId:staffIds ){
+            List<ExpenseSheetDto> expenseSheetDtoList = expenseSheetDtos.stream( ).filter( e->e.getStaffId().equals( staffId ) ).toList();
+            for ( LocalDate date:localDates ) {
+                List<ExpenseSheetDto> expenseSheet = expenseSheetDtoList.stream( ).filter( e->e.getDate().equals( date ) ).toList();
+                if(expenseSheet.size() == 0){
+                    ExpenseSheetDto expenseSheetDto = ExpenseSheetDto.builder( )
+                            .staffName( expenseSheetDtoList.get( 0 ).getStaffName() )
+                            .staffId( staffId )
+                            .approvedBy( 0 )
+                            .amountCash( 0.0 )
+                            .date( date )
+                            .openingDate( expenseSheetDtoList.get( 0 ).getOpeningDate() )
+                            .closingDate( expenseSheetDtoList.get( 0 ).getClosingDate() )
+                            .openingBalance( expenseSheetDtoList.get( 0 ).getOpeningBalance() )
+                            .closingBalance( expenseSheetDtoList.get( 0 ).getClosingBalance() )
+                            .approvedAmount( 0.0 )
+                            .totalActualExpense( 0.0 )
+                            .tea( expenseSheetDtoList.get( 0 ).getTea() )
+                            .telephone( expenseSheetDtoList.get( 0 ).getTelephone() )
+                            .petrol( expenseSheetDtoList.get( 0 ).getPetrol() )
+                            .build( );
+                    sheetDto.add( expenseSheetDto );
+                }else {
+                    sheetDto.addAll( expenseSheet );
+                }
+
+            }
+        }
+        return sheetDto;
+
     }
 }

@@ -28,7 +28,7 @@ public class ProjectDataController {
 
     @PutMapping
     public ResponseEntity < ? > updateProjectData ( @RequestBody ProjectRequest projectRequest ) {
-        log.info( "Update project where project id is {}",projectRequest.getProjectId() );
+        log.info( "Update project with project coordinator  is {}",projectRequest.getProjectCoordinator() );
         projectDataService.updateProjectData ( projectRequest );
         return new ResponseEntity <> ( HttpStatus.ACCEPTED );
     }

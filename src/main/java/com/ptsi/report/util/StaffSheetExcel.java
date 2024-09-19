@@ -1,6 +1,7 @@
 package com.ptsi.report.util;
 
 import com.ptsi.report.constant.StaffExpense;
+import com.ptsi.report.constant.StaffType;
 import org.apache.poi.ss.usermodel.*;
 import org.apache.poi.ss.util.CellRangeAddress;
 import org.apache.poi.xssf.usermodel.XSSFWorkbook;
@@ -9,9 +10,7 @@ import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.sql.Timestamp;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 import java.util.concurrent.atomic.AtomicInteger;
 
 public class StaffSheetExcel {
@@ -19,7 +18,7 @@ public class StaffSheetExcel {
 
     public static String SHEET_NAME = "project_sheet";
 
-    public static ByteArrayInputStream dataToExcel ( List < Map<String,Object> > mapList ) {
+    public static ByteArrayInputStream dataToExcel ( List < Map<String,Object> > mapList, StaffType staffType ) {
         try ( Workbook workbook = new XSSFWorkbook ( ); ByteArrayOutputStream out = new ByteArrayOutputStream ( ) ) {
             Sheet sheet = workbook.createSheet ( SHEET_NAME );
 
@@ -31,8 +30,8 @@ public class StaffSheetExcel {
             headerStyle.setFont(headerFont);
             headerStyle.setAlignment( HorizontalAlignment.CENTER );
 
-            createFirstRow ( sheet , headerStyle );
-            createStaffReportValueRow(sheet,mapList,workbook);
+            createFirstRow ( sheet , headerStyle,staffType );
+            createStaffReportValueRow(sheet,mapList,workbook,staffType);
             workbook.write ( out );
 
             return new ByteArrayInputStream ( out.toByteArray ( ) );
@@ -45,18 +44,22 @@ public class StaffSheetExcel {
         }
     }
 
-    public static HashMap <Integer, String> headers ( ) {
+    public static HashMap <Integer, String> headers ( StaffType staffType ) {
         HashMap <Integer, String> hashMap = new HashMap <> ( );
         int key = 0;
         StaffExpense[] expenses =StaffExpense.values ();
-        for (StaffExpense expense:expenses){
+        List<StaffExpense> expenseList = new ArrayList <>(Arrays.asList(expenses));
+        if(staffType == StaffType.PRO_CO){
+            expenseList.remove( StaffExpense.PROJECT_COORDINATOR );
+        }
+        for (StaffExpense expense:expenseList){
             hashMap.put ( key , expense.getName () );
             key=key+1;
         }
         return hashMap;
     }
 
-    public static void createFirstRow ( Sheet sheet , CellStyle cellStyle ) {
+    public static void createFirstRow ( Sheet sheet , CellStyle cellStyle,StaffType staffType ) {
 
         Row row = sheet.createRow ( 0 );
 
@@ -65,7 +68,7 @@ public class StaffSheetExcel {
         cellStyle.setWrapText ( true );
         cellStyle.setAlignment ( HorizontalAlignment.LEFT );
 
-        for ( Map.Entry <Integer, String> entry : headers ( ).entrySet ( ) ) {
+        for ( Map.Entry <Integer, String> entry : headers (staffType).entrySet ( ) ) {
             Cell cell = row.createCell ( entry.getKey ( ) );
             cell.setCellValue ( entry.getValue ( ) );
             cell.setCellStyle ( cellStyle );
@@ -74,10 +77,7 @@ public class StaffSheetExcel {
 
     }
 
-    public static void createStaffReportValueRow ( Sheet sheet,List<Map<String,Object>> mapList, Workbook workbook ) {
-
-
-
+    public static void createStaffReportValueRow ( Sheet sheet,List<Map<String,Object>> mapList, Workbook workbook,StaffType staffType ) {
 
         CellStyle cellStyle = workbook.createCellStyle ( );
 
@@ -89,7 +89,13 @@ public class StaffSheetExcel {
 
             int key = 0;
             StaffExpense[] expenses = StaffExpense.values ( );
-            for (StaffExpense expense : expenses) {
+
+            List<StaffExpense> expenseList = new ArrayList <>(Arrays.asList(expenses));
+            if(staffType == StaffType.PRO_CO){
+                expenseList.remove( StaffExpense.PROJECT_COORDINATOR );
+            }
+
+            for (StaffExpense expense : expenseList) {
                 cell = row.createCell ( key );
                 cell.setCellStyle ( cellStyle );
 
