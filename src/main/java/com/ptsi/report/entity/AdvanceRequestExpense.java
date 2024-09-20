@@ -29,6 +29,9 @@ public class AdvanceRequestExpense {
     @Column ( name = "CreatedBy" )
     private Float createdBy;
 
+    @Column ( name = "CreatedOn" )
+    private String createdOn;
+
     @Column ( name = "ApprovedAmount" )
     private Float approvedAmount;
 

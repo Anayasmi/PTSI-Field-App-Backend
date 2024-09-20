@@ -5,9 +5,12 @@ import com.ptsi.report.model.response.*;
 import com.ptsi.report.repository.ExpenseReportRepository;
 import com.ptsi.report.service.ExpenseReportService;
 import lombok.RequiredArgsConstructor;
+import org.apache.poi.ss.usermodel.CellStyle;
+import org.apache.poi.ss.usermodel.CreationHelper;
 import org.springframework.stereotype.Service;
 
 import java.sql.Date;
+import java.sql.Timestamp;
 import java.time.LocalDate;
 import java.time.temporal.ChronoUnit;
 import java.util.*;
@@ -129,22 +132,23 @@ public class ExpenseReportServiceImpl implements ExpenseReportService {
 
     public List< ExpenseSheetDto > convertToDto( List< Map< String, Object > > list ) {
         return list.stream( ).map( e -> ExpenseSheetDto.builder( )
-                .staffName( ( String ) e.get( "staffName" ) )
-                .staffId( ( Double ) e.get( "staffId" ) )
-                .approvedBy( ( Integer ) e.get( "approvedBy" ) )
-                .amountCash( ( Double ) e.get( "amountCash" ) )
-                .date( (( Date ) e.get( "date" )).toLocalDate() )
-                .openingDate( (( Date ) e.get( "openingDate" )).toLocalDate() )
-                .closingDate( (( Date ) e.get( "closingDate" )).toLocalDate() )
-                .openingBalance( ( Double ) e.get( "openingBalance" ) )
-                .closingBalance( ( Double ) e.get( "closingBalance" ) )
-                .approvedAmount( ( Double ) e.get( "approvedAmount" ) )
-                .totalActualExpense( ( Double ) e.get( "totalActualExpense" ) )
-                .tea( ( Double ) e.get( "tea" ) )
-                .telephone( ( Double ) e.get( "telephone" ) )
-                .petrol( ( Double ) e.get( "petrol" ) )
+                .staffName( getStringValue(  e.get( "staffName" ) ))
+                .staffId( getDoubleValue(  e.get( "staffId" ) ))
+                .approvedBy( getIntegerValue(  e.get( "approvedBy" ) ))
+                .amountCash( getDoubleValue(  e.get( "amountCash" ) ))
+                .date( getLocalDateValue(e.get( "date" )))
+                .openingDate( getLocalDateValue(e.get( "openingDate" )) )
+                .closingDate( getLocalDateValue( e.get( "closingDate" )))
+                .openingBalance( getDoubleValue(  e.get( "openingBalance" ) ))
+                .closingBalance( getDoubleValue( e.get( "closingBalance" ) ))
+                .approvedAmount( getDoubleValue( e.get( "approvedAmount" ) ))
+                .totalActualExpense( getDoubleValue( e.get( "totalActualExpense" ) ))
+                .tea( getDoubleValue( e.get( "tea" ) ))
+                .telephone( getDoubleValue( e.get( "telephone" ) ))
+                .petrol( getDoubleValue( e.get( "petrol" ) ))
                 .build( ) ).collect( Collectors.toList( ) );
     }
+
 
     List< ExpenseSheetDto > setMissingDateData(List< ExpenseSheetDto > expenseSheetDtos,List<LocalDate> localDates){
         List< ExpenseSheetDto > sheetDto=new ArrayList <>(  );
@@ -180,5 +184,49 @@ public class ExpenseReportServiceImpl implements ExpenseReportService {
         }
         return sheetDto;
 
+    }
+
+    Double getDoubleValue(Object object){
+        if(object instanceof Double) {
+            return  ( Double ) object;
+        }
+        if ( object instanceof Float ){
+            return Double.valueOf( ( Float ) object);
+        }
+        return 0.0;
+    }
+
+    Integer getIntegerValue(Object object){
+        if(object instanceof Double) {
+            return  Integer.valueOf( String.valueOf( object ) );
+        }
+        if ( object instanceof Float ){
+            return Integer.valueOf( String.valueOf( object ) );
+        }
+        if ( object instanceof Integer ){
+            return  ( Integer ) object;
+        }
+        return 0;
+    }
+
+    LocalDate getLocalDateValue(Object object){
+
+     if ( object instanceof Timestamp ){
+         Timestamp timestamp = (Timestamp ) object;
+         return timestamp.toLocalDateTime( ).toLocalDate( );
+     }
+        if ( object instanceof Date ){
+            Date date = (Date ) object;
+            return date.toLocalDate( );
+        }
+       return LocalDate.now();
+    }
+
+
+    String getStringValue(Object object){
+        if(object instanceof String){
+            return  ( String ) object ;
+        }
+        return "";
     }
 }

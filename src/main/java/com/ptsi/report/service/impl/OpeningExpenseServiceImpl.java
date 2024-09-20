@@ -10,6 +10,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
 import java.sql.Date;
+import java.sql.Timestamp;
 import java.time.LocalDate;
 import java.time.temporal.ChronoUnit;
 import java.util.*;
@@ -70,8 +71,8 @@ public class OpeningExpenseServiceImpl implements OpeningExpenseService {
         LocalDate firstDayOfMonth = LocalDate.of( year , month , 1 );
         LocalDate lastDayOfMonth = firstDayOfMonth.withDayOfMonth( firstDayOfMonth.lengthOfMonth( ) );
         LocalDate previousMonth = LocalDate.of( year , month , 1 ).minusMonths( 1 );
-        List < MonthlyOpeningExpense > previousMonthExpenses = openingExpenseRepository.findByProjectCoordinatorAndYearAndMonth( Float.valueOf( projectCoordinator ) , previousMonth.getYear( ) , previousMonth.getMonthValue( ) );
-        List < MonthlyOpeningExpense > thisMonthExpenses = openingExpenseRepository.findByProjectCoordinatorAndYearAndMonth( Float.valueOf( projectCoordinator ) , year , month );
+        List < MonthlyOpeningExpense > previousMonthExpenses = openingExpenseRepository.findByProjectCoordinatorAndYearAndMonthAndAdditionalStaff( Float.valueOf( projectCoordinator ) , previousMonth.getYear( ) , previousMonth.getMonthValue( ),0 );
+        List < MonthlyOpeningExpense > thisMonthExpenses = openingExpenseRepository.findByProjectCoordinatorAndYearAndMonthAndAdditionalStaff( Float.valueOf( projectCoordinator ) , year , month,0 );
 
         if ( previousMonthExpenses.size( ) == 0 && thisMonthExpenses.size( ) != 0 ) {
             List < Float > staffIds = thisMonthExpenses.stream( ).map( MonthlyOpeningExpense :: getStaffId ).distinct( ).toList( );
@@ -196,26 +197,26 @@ public class OpeningExpenseServiceImpl implements OpeningExpenseService {
     public List < AdvanceExpenseDto > convertToAdvanceDto( List < Map < String, Object > > list ) {
         return list.stream( )
                 .map( map -> AdvanceExpenseDto.builder( )
-                        .staffName( ( String ) map.get( "staffName" ) )
-                        .staffId( ( Double ) map.get( "staffId" ) )
-                        .date( ( ( Date ) map.get( "date" ) ).toLocalDate( ) )
-                        .totalActualExpense( ( Double ) map.get( "totalActualExpense" ) )
-                        .amountCash( ( Double ) map.get( "amountCash" ) )
-                        .approvedAmount( ( Double ) map.get( "approvedAmount" ) )
+                        .staffName( getStringValue(  map.get( "staffName" ) ))
+                        .staffId( getDoubleValue(  map.get( "staffId" ) ))
+                        .date( getLocalDateValue(  map.get( "date" ) ))
+                        .totalActualExpense( getDoubleValue(  map.get( "totalActualExpense" ) ))
+                        .amountCash( getDoubleValue(  map.get( "amountCash" ) ))
+                        .approvedAmount( getDoubleValue(  map.get( "approvedAmount" ) ))
                         .build( ) )
                 .collect( Collectors.toList( ) );
     }
 
     private OpeningExpenseResponse mapToDto( Map < String, Object > map ) {
         return OpeningExpenseResponse.builder( )
-                .staffName( ( String ) map.get( "staffName" ) )
-                .check( ( Integer ) map.get( "checkField" ) )
-                .staffId( ( Double ) map.get( "staffId" ) )
-                .openingDate( ( ( map.get( "openingDate" ) ) == null )? null : ( ( Date ) map.get( "openingDate" ) ).toLocalDate( ) )
-                .closingDate( ( ( map.get( "closingDate" ) ) == null )? null : ( ( Date ) map.get( "closingDate" ) ).toLocalDate( ) )
-                .openingBalance( ( Double ) map.get( "openingBalance" ) )
-                .closingBalance( ( Double ) map.get( "closingBalance" ) )
-                .openingId( ( Double ) map.get( "openingId" ) )
+                .staffName( getStringValue(  map.get( "staffName" ) ))
+                .check( getIntegerValue(  map.get( "checkField" ) ))
+                .staffId( getDoubleValue(  map.get( "staffId" ) ))
+                .openingDate( ( ( map.get( "openingDate" ) ) == null )? null : getLocalDateValue(  map.get( "openingDate" ) ))
+                .closingDate( ( ( map.get( "closingDate" ) ) == null )? null : getLocalDateValue( map.get( "closingDate" ) ))
+                .openingBalance( getDoubleValue(  map.get( "openingBalance" ) ))
+                .closingBalance( getDoubleValue(  map.get( "closingBalance" ) ))
+                .openingId( getDoubleValue( map.get( "openingId" ) ))
                 .build( );
     }
 
@@ -268,6 +269,50 @@ public class OpeningExpenseServiceImpl implements OpeningExpenseService {
             MonthlyOpeningExpense openingExpense = new MonthlyOpeningExpense( openingExpenseRequest , Float.valueOf( String.valueOf( closingBalance.get( ) ) ) , null , null );
             openingExpenseRepository.save( openingExpense );
         }
+    }
+
+    Double getDoubleValue(Object object){
+        if(object instanceof Double) {
+            return  ( Double ) object;
+        }
+        if ( object instanceof Float ){
+            return Double.valueOf( ( Float ) object);
+        }
+        return 0.0;
+    }
+
+    Integer getIntegerValue(Object object){
+        if(object instanceof Double) {
+            return  Integer.valueOf( String.valueOf( object ) );
+        }
+        if ( object instanceof Float ){
+            return Integer.valueOf( String.valueOf( object ) );
+        }
+        if ( object instanceof Integer ){
+            return  ( Integer ) object;
+        }
+        return 0;
+    }
+
+    LocalDate getLocalDateValue(Object object){
+
+        if ( object instanceof Timestamp ){
+            Timestamp timestamp = (Timestamp ) object;
+            return timestamp.toLocalDateTime( ).toLocalDate( );
+        }
+        if ( object instanceof Date ){
+            Date date = (Date ) object;
+            return date.toLocalDate( );
+        }
+        return LocalDate.now();
+    }
+
+
+    String getStringValue(Object object){
+        if(object instanceof String){
+            return  ( String ) object ;
+        }
+        return "";
     }
 
 }

@@ -20,7 +20,4 @@ public class AdvanceExpenseRequest {
     private Float approvedAmount;
 
     private Float approvedBy;
-
-    private LocalDate approvedOn;
-
 }

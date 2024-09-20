@@ -13,6 +13,8 @@ public class AdvanceExpenseResponse {
 
     private Float createdBy;
 
+    private String createdOn;
+
     private String staffName;
 
     private Float amountRequested;

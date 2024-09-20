@@ -13,7 +13,7 @@ public interface OpeningExpenseRepository extends JpaRepository< MonthlyOpeningE
 
     List<MonthlyOpeningExpense> findByProjectCoordinatorAndStaffId( Float projectCoordinator, Float staffId, Sort sort );
 
-    List<MonthlyOpeningExpense> findByProjectCoordinatorAndYearAndMonth( Float projectCoordinator, Integer year, Integer month );
+    List<MonthlyOpeningExpense> findByProjectCoordinatorAndYearAndMonthAndAdditionalStaff( Float projectCoordinator, Integer year, Integer month,Integer additionalStaff );
 
     List<MonthlyOpeningExpense> findByProjectCoordinatorAndStaffIdAndYearAndMonth( Float projectCoordinator,Float staffId, Integer year, Integer month );
 

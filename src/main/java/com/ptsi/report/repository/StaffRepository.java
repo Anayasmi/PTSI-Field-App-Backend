@@ -3,11 +3,17 @@ package com.ptsi.report.repository;
 import com.ptsi.report.entity.Staff;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
+import org.springframework.data.repository.query.Param;
 
 import java.util.List;
 import java.util.Map;
 
 public interface StaffRepository extends JpaRepository< Staff,Float > {
+
+
+    @Query(value = "SELECT * FROM Staff s WHERE s.FirstName LIKE CONCAT('%', :firstName, '%') AND s.LastName LIKE CONCAT('%', :lastName, '%')", nativeQuery = true)
+    List<Map<String, Object>> findUser(@Param("firstName") String firstName, @Param("lastName") String lastName);
+
 
     @Query(value = "SELECT DISTINCT c.ProjectCoordinator As staffId,\n" +
             "                CONCAT(TRIM(s.FirstName), ' ', TRIM(s.LastName)) AS staffName\n" +

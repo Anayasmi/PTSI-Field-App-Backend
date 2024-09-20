@@ -61,7 +61,7 @@ public class Users {
     @Column ( name = "UpdatedDate" )
     private LocalDateTime updatedDate;
 
-    public LoginResponse toDTO ( ) {
-        return new LoginResponse ( firstName.concat ( " " ).concat ( lastName ) , mobileNo , email , role , isLoginActive );
+    public LoginResponse toDTO (Double userId) {
+        return new LoginResponse ( firstName.concat ( " " ).concat ( lastName ) , mobileNo , email , role , isLoginActive,userId );
     }
 }

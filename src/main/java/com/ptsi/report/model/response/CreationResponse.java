@@ -9,12 +9,7 @@ import lombok.Setter;
 @Setter
 @AllArgsConstructor
 @NoArgsConstructor
-public class LoginResponse {
-
-    private String name;
-    private String mobileNo;
-    private String email;
-    private Float role;
-    private Float isLoginActive;
-    private Double staffId;
+public class CreationResponse {
+    private String id;
+    private String message;
 }

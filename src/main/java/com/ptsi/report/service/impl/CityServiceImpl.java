@@ -7,8 +7,11 @@ import com.ptsi.report.repository.CityRepository;
 import com.ptsi.report.service.CityService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.poi.ss.usermodel.CellStyle;
+import org.apache.poi.ss.usermodel.CreationHelper;
 import org.springframework.stereotype.Service;
 
+import java.sql.Timestamp;
 import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Map;
@@ -34,11 +37,29 @@ public class CityServiceImpl implements CityService {
 
         List< Map<String,Object> > zoneMasters = cityRepository.getCities( );
         return zoneMasters.stream( ).map( e -> CityResponse.builder( )
-                .staffName( ( String ) e.get( "staffName" ) )
-                .projectCoordinator( ( Double ) e.get( "projectCoordinator" ) )
-                .cityName(  ( String ) e.get( "cityName" ) )
-                .cityId( ( Double ) e.get( "cityId" ) )
+                .staffName( getStringValue(  e.get( "staffName" ) ))
+                .projectCoordinator( getDoubleValue( e.get( "projectCoordinator" ) ))
+                .cityName(  getStringValue(  e.get( "cityName" ) ))
+                .cityId( getDoubleValue( e.get( "cityId" ) ))
                 .build( ) ).collect( Collectors.toList( ) );
+    }
+
+    Double getDoubleValue(Object object){
+        if(object instanceof Double) {
+           return  ( Double ) object;
+        }
+        if ( object instanceof Float ){
+            return Double.valueOf( ( Float ) object);
+        }
+        return 0.0;
+    }
+
+
+    String getStringValue(Object object){
+        if(object instanceof String){
+            return  ( String ) object ;
+        }
+        return "";
     }
 
 
