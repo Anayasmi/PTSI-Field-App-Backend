@@ -38,17 +38,23 @@ public interface MonthlyExpenseRepository extends JpaRepository< MonthlyExpense,
             "       ISNULL(ME.Telephone, 0) AS telephone,\n" +
             "       ISNULL(ME.Petrol, 0) AS petrol\n" +
             "FROM City c\n" +
-            "LEFT JOIN Staff s ON s.CityId=c.CityId\n" +
+            "LEFT JOIN Staff s ON s.CityId = c.CityId\n" +
             "LEFT JOIN Users u ON u.FirstName = s.FirstName\n" +
             "AND u.LastName = s.LastName\n" +
             "LEFT JOIN MonthlyExpense ME ON ME.StaffId = s.StaffId\n" +
-            "AND ME.Month=:month\n" +
-            "AND ME.Year=:year\n" +
-            "WHERE c.ProjectCoordinator=:staffId\n" +
+            "AND ME.Month = :month\n" +
+            "AND ME.Year = :year\n" +
+            "WHERE c.ProjectCoordinator = :staffId\n" +
             "  AND u.IsLoginActive <> 0\n" +
-            "  AND s.FirstName Not Like '%Test%'\n" +
-            "  AND s.FirstName Not Like '%Admin%'\n" +
+            "  AND s.FirstName NOT LIKE '%Test%'\n" +
+            "  AND s.FirstName NOT LIKE '%Admin%'\n" +
             "  AND s.StaffId IS NOT NULL\n" +
+            "GROUP BY s.StaffId,\n" +
+            "         s.FirstName,\n" +
+            "         s.lastName,\n" +
+            "         ME.Tea,\n" +
+            "         ME.Telephone,\n" +
+            "         ME.Petrol\n" +
             "ORDER BY CASE\n" +
             "             WHEN s.StaffId = :staffId THEN 1\n" +
             "             ELSE 2\n" +
@@ -67,6 +73,12 @@ public interface MonthlyExpenseRepository extends JpaRepository< MonthlyExpense,
             "WHERE ME.ProjectCoordinator=:staffId\n" +
             "  AND ME.AdditionalStaff =1\n" +
             "  AND s.StaffId IS NOT NULL\n" +
+            "GROUP BY s.StaffId,\n" +
+            "         s.FirstName,\n" +
+            "         s.lastName,\n" +
+            "         ME.Tea,\n" +
+            "         ME.Telephone,\n" +
+            "         ME.Petrol\n" +
             "ORDER BY CASE\n" +
             "             WHEN s.StaffId = :staffId THEN 1\n" +
             "             ELSE 2\n" +

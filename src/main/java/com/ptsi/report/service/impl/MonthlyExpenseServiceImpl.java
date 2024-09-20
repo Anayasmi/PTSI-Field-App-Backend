@@ -46,9 +46,7 @@ public class MonthlyExpenseServiceImpl implements MonthlyExpenseService {
     public List < MonthlyExpenseResponse > fetchByProjectCoordinator ( Integer staffId, Integer year, Integer month, StaffCategory staffCategory ) {
         List< Map< String, Object > > openingExpenseList;
 
-        if(staffCategory == StaffCategory.ALL){
-            openingExpenseList = monthlyExpenseRepository.findAllBYProjectCoordinator( staffId, year, month );
-        }else if(staffCategory == StaffCategory.STAFF) {
+       if(staffCategory == StaffCategory.STAFF) {
             openingExpenseList = monthlyExpenseRepository.findStaffBYProjectCoordinator( staffId, year, month );
         }else {
             openingExpenseList = monthlyExpenseRepository.findAdditionalStaffBYProjectCoordinator( staffId, year, month );
