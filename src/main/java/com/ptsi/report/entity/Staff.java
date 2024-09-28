@@ -1,6 +1,7 @@
 package com.ptsi.report.entity;
 
 import com.ptsi.report.model.response.StaffResponse;
+import com.ptsi.report.model.response.StaffValue;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
@@ -88,7 +89,10 @@ public class Staff {
     @Column ( name = "AccountBalance" )
     private Float accountBalance;
 
-    public StaffResponse toDto ( ) {
-        return new StaffResponse ( staffId , employeeId , firstName.trim ( ).concat ( " " ).concat ( lastName ).trim ( ) , mobileNo , email );
+    @Column ( name = "ProjectCoordinator" )
+    private Float projectCoordinator;
+
+    public StaffResponse toDto ( String projectCoordinatorName ) {
+        return new StaffResponse ( staffId , employeeId , firstName.trim ( ).concat ( " " ).concat ( lastName ).trim ( ) , mobileNo , email ,projectCoordinator,projectCoordinatorName);
     }
 }

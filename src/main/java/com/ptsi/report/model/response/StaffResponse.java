@@ -16,4 +16,6 @@ public class StaffResponse {
     private String name;
     private String mobileNo;
     private String email;
+    private Float projectCoordinator;
+    private String projectCoordinatorName;
 }

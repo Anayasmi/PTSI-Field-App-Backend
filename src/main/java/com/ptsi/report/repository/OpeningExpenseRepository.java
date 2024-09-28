@@ -51,16 +51,16 @@ public interface OpeningExpenseRepository extends JpaRepository< MonthlyOpeningE
             "           WHEN ME.OpeningId IS NULL THEN 0 \n" +
             "           ELSE 1 \n" +
             "       END AS checkField -- 'check' is a keyword in some databases, so renamed to 'checkField'\n" +
-            "FROM City c\n" +
-            "LEFT JOIN Staff s ON s.CityId = c.CityId\n" +
+            "FROM  Staff s \n" +
             "LEFT JOIN Users u ON u.FirstName = s.FirstName\n" +
             "                 AND u.LastName = s.LastName\n" +
             "LEFT JOIN MonthlyOpeningExpense ME ON ME.StaffId = s.StaffId\n" +
-            "                                  AND ME.OpeningDate BETWEEN @firstDayOfMonth AND @lastDayOfMonth\n" +
-            "WHERE c.ProjectCoordinator = @StaffId\n" +
+            "   AND ME.AdditionalStaff=0 AND ME.OpeningDate BETWEEN @firstDayOfMonth AND @lastDayOfMonth\n" +
+            "WHERE s.ProjectCoordinator = @StaffId\n" +
             "  AND u.IsLoginActive <> 0\n" +
             "  AND s.FirstName NOT LIKE '%Test%'\n" +
             "  AND s.FirstName NOT LIKE '%Admin%'\n" +
+            "  AND s.Active <> 0\n" +
             "  AND s.StaffId IS NOT NULL\n" +
             "ORDER BY CASE\n" +
             "           WHEN s.StaffId = @StaffId THEN 1\n" +
@@ -138,6 +138,7 @@ public interface OpeningExpenseRepository extends JpaRepository< MonthlyOpeningE
             "  AND u.IsLoginActive <> 0\n" +
             "  AND s.FirstName NOT LIKE '%Test%'\n" +
             "  AND s.FirstName NOT LIKE '%Admin%'\n" +
+            " AND s.Active <> 0 \n"+
             "GROUP BY s.StaffId,\n" +
             "         s.FirstName,\n" +
             "         s.LastName,\n" +

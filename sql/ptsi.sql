@@ -2,7 +2,7 @@ CREATE TABLE [MonthlyOpeningExpense](
 	[OpeningId] [float] NOT NULL,
 	[ProjectCoordinator] [float] NULL,
 	[AdditionalStaff] [bit]  DEFAULT ((0)) NULL,
-	[AutoCreated] [bit]  DEFAULT ((0)) NULL
+	[IsWorked] [bit]  DEFAULT ((0)) NULL
 	[StaffId] [float] NULL,
 	[Year] [int] NOT NULL,
 	[Month] [int] NOT NULL,
@@ -25,7 +25,8 @@ MAXVALUE 1000000
 CYCLE;
 
 ALTER TABLE Project ADD ProjectCoordinator FLOAT NULL;
-ALTER TABLE City ADD ProjectCoordinator FLOAT NULL;
+ALTER TABLE ZoneMaster ADD ProjectCoordinator VARCHAR(255) NULL;
+ALTER TABLE Staff ADD ProjectCoordinator FLOAT NULL;
 
 
 

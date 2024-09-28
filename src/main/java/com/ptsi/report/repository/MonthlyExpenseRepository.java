@@ -32,33 +32,38 @@ public interface MonthlyExpenseRepository extends JpaRepository< MonthlyExpense,
 
     List < Map < String, Object > > findAllBYProjectCoordinator( Integer staffId, Integer year, Integer month);
 
-    @Query(value = "SELECT s.StaffId AS staffId,\n" +
-            "       CONCAT(TRIM(s.FirstName), ' ', TRIM(s.LastName)) AS staffName,\n" +
-            "       ISNULL(ME.Tea, 0) AS tea,\n" +
-            "       ISNULL(ME.Telephone, 0) AS telephone,\n" +
-            "       ISNULL(ME.Petrol, 0) AS petrol\n" +
-            "FROM City c\n" +
-            "LEFT JOIN Staff s ON s.CityId = c.CityId\n" +
-            "LEFT JOIN Users u ON u.FirstName = s.FirstName\n" +
+
+    @Query(value = "SELECT \n" +
+            "    s.StaffId AS staffId,\n" +
+            "    CONCAT(TRIM(s.FirstName), ' ', TRIM(s.LastName)) AS staffName,  \n" +
+            "    ISNULL(ME.Tea, 0) AS tea,  \n" +
+            "    ISNULL(ME.Telephone, 0) AS telephone,  \n" +
+            "    ISNULL(ME.Petrol, 0) AS petrol  \n" +
+            "FROM Staff s\n" +
+            "LEFT JOIN Users u ON u.FirstName = s.FirstName  \n" +
             "AND u.LastName = s.LastName\n" +
-            "LEFT JOIN MonthlyExpense ME ON ME.StaffId = s.StaffId\n" +
-            "AND ME.Month = :month\n" +
+            "LEFT JOIN MonthlyExpense ME ON ME.StaffId = s.StaffId  \n" +
+            "AND ME.Month = :month  \n" +
             "AND ME.Year = :year\n" +
-            "WHERE c.ProjectCoordinator = :staffId\n" +
-            "  AND u.IsLoginActive <> 0\n" +
-            "  AND s.FirstName NOT LIKE '%Test%'\n" +
-            "  AND s.FirstName NOT LIKE '%Admin%'\n" +
-            "  AND s.StaffId IS NOT NULL\n" +
-            "GROUP BY s.StaffId,\n" +
-            "         s.FirstName,\n" +
-            "         s.lastName,\n" +
-            "         ME.Tea,\n" +
-            "         ME.Telephone,\n" +
-            "         ME.Petrol\n" +
-            "ORDER BY CASE\n" +
-            "             WHEN s.StaffId = :staffId THEN 1\n" +
-            "             ELSE 2\n" +
-            "         END;",nativeQuery = true)
+            "AND ME.AdditionalStaff=0 \n"+
+            "WHERE s.ProjectCoordinator = :staffId  \n" +
+            "  AND u.IsLoginActive <> 0  \n" +
+            "  AND s.FirstName NOT LIKE '%Test%'  \n" +
+            "  AND s.FirstName NOT LIKE '%Admin%'  \n" +
+            "  AND s.Active <> 0 \n" +
+            "  AND s.StaffId IS NOT NULL  \n" +
+            "GROUP BY \n" +
+            "    s.StaffId, \n" +
+            "    s.FirstName, \n" +
+            "    s.LastName,  \n" +
+            "    ME.Tea,  \n" +
+            "    ME.Telephone,  \n" +
+            "    ME.Petrol  \n" +
+            "ORDER BY \n" +
+            "    CASE\n" +
+            "        WHEN s.StaffId = :staffId THEN 1  \n" +
+            "        ELSE 2  \n" +
+            "    END;\n",nativeQuery = true)
     List < Map < String, Object > > findStaffBYProjectCoordinator( Integer staffId, Integer year, Integer month);
 
     @Query(value = "SELECT s.StaffId AS staffId,\n" +

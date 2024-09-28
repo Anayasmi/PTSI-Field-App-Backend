@@ -21,5 +21,4 @@ public class OpeningExpenseRequest {
     private Float projectCoordinator;
     private Integer updatedBy;
     private Integer additionalStaff;
-    private Integer autoCreated;
 }

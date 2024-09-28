@@ -4,6 +4,7 @@ import com.ptsi.report.constant.StaffType;
 import com.ptsi.report.model.response.ExpenseResponse;
 import com.ptsi.report.model.response.ExpenseSheetDto;
 import com.ptsi.report.model.response.ExpenseSheetResponse;
+import com.ptsi.report.model.response.StaffSheetResponse;
 import com.ptsi.report.service.impl.ExpenseReportServiceImpl;
 import com.ptsi.report.util.ExpenseSheetExcel;
 import com.ptsi.report.util.StaffSheetExcel;
@@ -21,9 +22,8 @@ import org.springframework.web.bind.annotation.*;
 import java.io.ByteArrayInputStream;
 import java.time.LocalDate;
 import java.time.LocalTime;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
+import java.util.stream.Collectors;
 
 @RestController
 @CrossOrigin ( "*" )
@@ -61,6 +61,15 @@ public class ExpenseReportController {
         log.info( "Fetch expense report where month is {} and year is {}",month,year );
 
         List < ExpenseSheetResponse > report = expenseReportService.fetchExpenseSheet ( year,month, staffId,openingBalance);
+       report.forEach( r->{
+
+        r.setStaffSheetResponseList(
+                r.getStaffSheetResponseList().stream()
+                .sorted( Comparator.comparing(
+                        StaffSheetResponse ::getStaffId,
+                        Comparator.comparingDouble(id -> Objects.equals( id , Double.valueOf( staffId ) )? Double.MAX_VALUE : staffId)))
+                .collect( Collectors.toList()));
+               });
 
         String fileName =  "project_coordinator_sheet_" + staffId + ".xlsx";
         log.info( "Excel formatting started");

@@ -58,7 +58,7 @@ public class ExpenseReportRepository {
                         "    SELECT c.CityId, c.CityName,\n" +
                         "           CONCAT(TRIM(s.FirstName), '' '', TRIM(s.LastName)) AS ProjectCoordinatorName\n" +
                         "    FROM City c\n" +
-                        "    LEFT JOIN Staff s ON s.StaffId = c.ProjectCoordinator -- Adjust the column name if necessary\n" +
+                        "    LEFT JOIN Staff s ON s.StaffId = @StaffId -- Adjust the column name if necessary\n" +
                         ") CT ON CT.CityId = P.CityId\n" +
                         "LEFT JOIN PortionFloor PF ON PF.PortionId = DP.PortionId\n" +
                         "LEFT JOIN (\n" +
@@ -95,42 +95,47 @@ public class ExpenseReportRepository {
                         "    @ToDate,\n" +
                         "    @StaffId;\n";
             } else {
-                sql = "DECLARE @FromDate DATETIME = '"+fromDate+"';\n" +
+                sql="DECLARE @FromDate DATETIME = '"+fromDate+"';\n" +
+                        "\n" +
                         "DECLARE @ToDate DATETIME = '"+toDate+"';\n" +
+                        "\n" +
                         "DECLARE @StaffId INT = "+staffId+";\n" +
+                        "\n" +
                         "DECLARE @ColumnList NVARCHAR(MAX);\n" +
                         "\n" +
                         "-- Generate dynamic column list for expense categories\n" +
+                        "\n" +
                         "SELECT @ColumnList = STRING_AGG('MAX(CASE WHEN EX.ExpenseName = ''' + REPLACE(ExpenseName, '''', '''''') + ''' THEN SQ.ActualAmount ELSE 0 END) AS [' + LEFT(ExpenseName, 28) + ']', ', ')\n" +
                         "FROM ExpenseCategory;\n" +
                         "\n" +
                         "DECLARE @Sql NVARCHAR(MAX);\n" +
                         "\n" +
+                        "\n" +
                         "SET @Sql = '\n" +
                         "SELECT DISTINCT\n" +
-                        "DP.DPRId AS ''DPR No.'',\n" +
-                        "DP.Date AS ''Date'',\n" +
-                        "ISNULL(PF.PortionName,'''') AS ''Floor Level'',\n" +
-                        "ISNULL(P.ProjectNumber,'''') AS ''Project No.'',\n" +
-                        "ISNULL(P.ProjectName,'''') AS ''Project'',\n" +
-                        "ISNULL(CT.CityName,'''') AS ''City'',\n" +
-                        "CONCAT(S.FirstName, '' '', S.LastName) AS ''Field Staff Name'',\n" +
-                        "ISNULL(SDE.ActualExpense, 0) AS ''Actual Expense'',\n" +
-                        "DS.Status AS ''DPR Status'',\n" +
-                        "' + @ColumnList + ',\n" +
-                        "DP.TotalActualExpense AS ''Day Total''\n" +
+                        "    DP.DPRId AS ''DPR No.'',\n" +
+                        "    DP.Date AS ''Date'',\n" +
+                        "    ISNULL(PF.PortionName,'''') AS ''Floor Level'',\n" +
+                        "    ISNULL(P.ProjectNumber,'''') AS ''Project No.'',\n" +
+                        "    ISNULL(P.ProjectName,'''') AS ''Project'',\n" +
+                        "    ISNULL(CT.CityName,'''') AS ''City'',\n" +
+                        "    CONCAT(S.FirstName, '' '', S.LastName) AS ''Field Staff Name'',\n" +
+                        "    ISNULL(SDE.ActualExpense, 0) AS ''Actual Expense'',\n" +
+                        "    DS.Status AS ''DPR Status'',\n" +
+                        "    ' + @ColumnList + ',\n" +
+                        "    DP.TotalActualExpense AS ''Day Total''\n" +
                         "FROM Staff S\n" +
                         "JOIN StaffExpenseTransaction ST ON S.StaffId = ST.StaffId \n" +
                         "AND S.StaffId IN (\n" +
-                        "    SELECT DISTINCT s.StaffId \n" +
-                        "    FROM City C \n" +
-                        "    LEFT JOIN Staff s ON s.CityId = C.CityId \n" +
+                        "    SELECT DISTINCT s.StaffId\n" +
+                        "    FROM Staff s \n" +
                         "    LEFT JOIN Users u ON u.FirstName = s.FirstName AND u.LastName = s.LastName\n" +
-                        "    WHERE C.ProjectCoordinator = @StaffId \n" +
+                        "    WHERE s.ProjectCoordinator = @StaffId\n" +
                         "    AND s.StaffId IS NOT NULL \n" +
                         "    AND u.IsLoginActive <> 0 \n" +
                         "    AND s.FirstName NOT LIKE ''%Test%'' \n" +
                         "    AND s.FirstName NOT LIKE ''%Admin%''\n" +
+                        "    AND s.Active <> 0  \n" +
                         ")\n" +
                         "JOIN DailyProgressReport DP ON DP.FilledBy = S.StaffId \n" +
                         "AND DP.Date BETWEEN @FromDate AND @ToDate\n" +
@@ -149,11 +154,12 @@ public class ExpenseReportRepository {
                         "LEFT JOIN ExpenseCategory EX ON SQ.ExpenseCategoryId = EX.ExpenseCategoryId\n" +
                         "JOIN DPRStatus DS ON DS.StatusId = DP.DPRStatus\n" +
                         "WHERE (P.ProjectId IS NULL OR CT.CityId IS NULL OR CT.CityId IN (\n" +
-                        "    SELECT C.CityId\n" +
-                        "    FROM City C\n" +
-                        "    WHERE C.ProjectCoordinator = @StaffId\n" +
+                        "    SELECT DISTINCT c.CityId \n" +
+                        "    FROM ZoneMaster z \n" +
+                        "    LEFT JOIN City c ON c.ZoneId = z.ZoneId\n" +
+                        "    WHERE z.ProjectCoordinator LIKE ''%'' + CAST(@StaffId AS VARCHAR) + ''%''\n" +
                         "))\n" +
-                        "GROUP BY \n" +
+                        "GROUP BY\n" +
                         "    DP.DPRId,\n" +
                         "    DP.Date,\n" +
                         "    P.ProjectNumber,\n" +
@@ -167,10 +173,10 @@ public class ExpenseReportRepository {
                         "ORDER BY DP.Date ASC;';\n" +
                         "\n" +
                         "EXEC sp_executesql @Sql,\n" +
-                        "    N'@FromDate DATETIME, @ToDate DATETIME, @StaffId INT',\n" +
-                        "    @FromDate,\n" +
-                        "    @ToDate,\n" +
-                        "    @StaffId;\n";
+                        "     N'@FromDate DATETIME, @ToDate DATETIME, @StaffId INT',\n" +
+                        "      @FromDate,\n" +
+                        "      @ToDate,\n" +
+                        "      @StaffId;";
             }
 
 

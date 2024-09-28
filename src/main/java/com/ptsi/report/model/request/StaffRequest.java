@@ -13,8 +13,5 @@ public class StaffRequest {
 
     private Float staffId;
     private Float projectCoordinator;
-    private Float tea;
-    private Float telephone;
-    private Float petrol;
     private Integer updatedBy;
 }

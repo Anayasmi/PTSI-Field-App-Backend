@@ -125,7 +125,7 @@ public class OpeningExpenseServiceImpl implements OpeningExpenseService {
                         .projectCoordinator( Float.valueOf( projectCoordinator ) )
                         .updatedBy( projectCoordinator )
                         .additionalStaff( 0 )
-                        .autoCreated( 1 ).build( );
+                        .build( );
 
                 openingExpenseRepository.save( new MonthlyOpeningExpense( openingExpenseRequest , closingBalance.get( ) , projectCoordinator , String.valueOf( LocalDate.now( ) ) ) );
 
@@ -159,7 +159,7 @@ public class OpeningExpenseServiceImpl implements OpeningExpenseService {
                             .projectCoordinator( Float.valueOf( projectCoordinator ) )
                             .updatedBy( projectCoordinator )
                             .additionalStaff( 0 )
-                            .autoCreated( 1 ).build( );
+                            .build( );
                     thisMonthOpeningExpenseResponses = new ArrayList<>();
                     thisMonthOpeningExpenseResponses.add( new MonthlyOpeningExpense( openingExpenseRequest , 0.0F , projectCoordinator , String.valueOf( LocalDate.now( ) ) ));
                 }

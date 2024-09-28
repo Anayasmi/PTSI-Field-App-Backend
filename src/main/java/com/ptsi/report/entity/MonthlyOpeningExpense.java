@@ -63,15 +63,15 @@ public class MonthlyOpeningExpense {
     @Column ( name = "UpdatedDate" )
     private String updatedDate;
 
-    @Column ( name = "AutoCreated" )
-    private Integer autoCreated;
+    @Column ( name = "IsWorked" )
+    private Integer isWorked;
 
 
 
 
     public MonthlyOpeningExpense ( OpeningExpenseRequest openingExpenseRequest,Float closingBalance , Integer createdBy , String createdDate ) {
 
-        this.autoCreated=openingExpenseRequest.getAutoCreated();
+        this.isWorked=1;
         this.openingBalance=openingExpenseRequest.getOpeningBalance();
         this.year=openingExpenseRequest.getYear();
         this.month=openingExpenseRequest.getMonth();
