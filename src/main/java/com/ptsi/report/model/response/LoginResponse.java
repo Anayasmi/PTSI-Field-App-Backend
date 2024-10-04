@@ -16,5 +16,6 @@ public class LoginResponse {
     private String email;
     private Float role;
     private Float isLoginActive;
-    private Double staffId;
+    private Integer staffId;
+    private String userRole;
 }

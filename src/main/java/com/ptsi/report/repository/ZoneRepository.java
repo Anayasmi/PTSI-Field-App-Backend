@@ -9,4 +9,6 @@ public interface ZoneRepository extends JpaRepository< ZoneMaster,Float > {
 
     List<ZoneMaster> findByIsDeleted(Float isDeleted);
 
+    List<ZoneMaster> findByProjectCoordinator(String projectCoordinator);
+
 }

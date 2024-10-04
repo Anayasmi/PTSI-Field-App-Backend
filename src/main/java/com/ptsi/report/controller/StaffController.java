@@ -22,9 +22,9 @@ public class StaffController {
     private final StaffService staffService;
 
     @GetMapping
-    public ResponseEntity < List < StaffResponse > > fetchStaff ( ) {
+    public ResponseEntity < List < StaffResponse > > fetchStaff (@RequestParam(required = false) Float projectCoordinator ) {
         log.info( "Fetch all staffs" );
-        return new ResponseEntity <> ( staffService.fetchStaff ( ) , HttpStatus.OK );
+        return new ResponseEntity <> ( staffService.fetchStaff ( projectCoordinator ) , HttpStatus.OK );
     }
 
     @PutMapping

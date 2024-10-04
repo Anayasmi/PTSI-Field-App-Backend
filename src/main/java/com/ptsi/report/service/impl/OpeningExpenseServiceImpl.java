@@ -272,6 +272,9 @@ public class OpeningExpenseServiceImpl implements OpeningExpenseService {
     }
 
     Double getDoubleValue(Object object){
+        if ( object instanceof Integer ){
+            return Double.valueOf( ( Integer ) object);
+        }
         if(object instanceof Double) {
             return  ( Double ) object;
         }

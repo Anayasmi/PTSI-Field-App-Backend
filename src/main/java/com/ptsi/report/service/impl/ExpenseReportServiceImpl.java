@@ -40,7 +40,7 @@ public class ExpenseReportServiceImpl implements ExpenseReportService {
 
         List<Map<String,Object>> advanceProCo= expenseReportRepository.fetchAdvanceForProCo( firstDayOfMonth,lastDayOfMonth,staffId );
 
-        List<AdvanceDto> advanceDtoList=advanceProCo.stream( ).map( e ->new AdvanceDto( (( Date ) e.get( "date" )).toLocalDate(),( ( Integer ) e.get( "advanceAmount" ) ))).toList( );
+        List<AdvanceDto> advanceDtoList=advanceProCo.stream( ).map( e ->new AdvanceDto( (( Date ) e.get( "date" )).toLocalDate(),( getIntegerValue (  e.get( "advanceAmount" ) )))).toList( );
 
         List< Map< String, Object > > openingExpenseList = expenseReportRepository.fetchExpenseSheet( year, month, staffId );
 
@@ -62,7 +62,7 @@ public class ExpenseReportServiceImpl implements ExpenseReportService {
 
         List<Map<String,Object>> advanceProCo= expenseReportRepository.fetchAdvanceForProCo( firstDayOfMonth,lastDayOfMonth,staffId );
 
-        List<AdvanceDto> advanceDtoList=advanceProCo.stream( ).map( e ->new AdvanceDto( (( Date ) e.get( "date" )).toLocalDate(),( ( Integer ) e.get( "advanceAmount" ) ))).toList( );
+        List<AdvanceDto> advanceDtoList=advanceProCo.stream( ).map( e ->new AdvanceDto( (( Date ) e.get( "date" )).toLocalDate(),( getIntegerValue (  e.get( "advanceAmount" ) )))).toList( );
 
         List< Map< String, Object > > openingExpenseList = expenseReportRepository.fetchExpenseSheet( year, month, staffId );
 
@@ -198,7 +198,7 @@ public class ExpenseReportServiceImpl implements ExpenseReportService {
 
     Integer getIntegerValue(Object object){
         if(object instanceof Double) {
-            return  Integer.valueOf( String.valueOf( object ) );
+            return  ( (Double) object ).intValue ();
         }
         if ( object instanceof Float ){
             return Integer.valueOf( String.valueOf( object ) );

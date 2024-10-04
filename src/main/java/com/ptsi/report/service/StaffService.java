@@ -8,7 +8,7 @@ import java.util.List;
 
 public interface StaffService {
 
-    List< StaffResponse > fetchStaff();
+    List< StaffResponse > fetchStaff(Float projectCoordinator);
 
     void updateStaff( StaffRequest staffRequest );
 

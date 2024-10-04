@@ -9,6 +9,7 @@ import org.apache.poi.xssf.usermodel.XSSFWorkbook;
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
+import java.math.BigDecimal;
 import java.sql.Timestamp;
 import java.util.*;
 import java.util.concurrent.atomic.AtomicInteger;
@@ -101,6 +102,19 @@ public class StaffSheetExcel {
 
                 Object object=staff.get ( expense.getName () );
 
+                if(object instanceof BigDecimal ){
+                    Double value = ( ( BigDecimal ) object ).doubleValue ();
+                    if(value != 0) {
+                        cell.setCellValue( value );
+                    }
+                }
+
+                if(object instanceof Integer){
+                    Integer value = ( Integer ) object;
+                    if(value != 0) {
+                        cell.setCellValue( value );
+                    }
+                }
                 if(object instanceof Double){
                     Double value = ( Double ) object;
                     if(value != 0) {

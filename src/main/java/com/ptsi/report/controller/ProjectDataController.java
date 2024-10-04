@@ -21,9 +21,9 @@ public class ProjectDataController {
     private final ProjectDataService projectDataService;
 
     @GetMapping
-    public ResponseEntity < List < ProjectResponse > > fetchProjectData ( ) {
+    public ResponseEntity < List < ProjectResponse > > fetchProjectData ( Float projectCoordinator ) {
         log.info( "Fetch all projects" );
-        return new ResponseEntity <> ( projectDataService.fetchProjectData ( ) , HttpStatus.OK );
+        return new ResponseEntity <> ( projectDataService.fetchProjectData ( projectCoordinator ) , HttpStatus.OK );
     }
 
     @PutMapping

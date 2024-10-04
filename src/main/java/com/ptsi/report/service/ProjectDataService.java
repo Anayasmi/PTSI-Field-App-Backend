@@ -7,6 +7,6 @@ import java.util.List;
 
 public interface ProjectDataService {
 
-    List< ProjectResponse > fetchProjectData();
+    List< ProjectResponse > fetchProjectData(Float projectCoordinator);
     void updateProjectData( ProjectRequest projectRequest );
 }

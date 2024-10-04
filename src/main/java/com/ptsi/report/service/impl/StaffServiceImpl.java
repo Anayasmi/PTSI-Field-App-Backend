@@ -12,7 +12,6 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
-import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
@@ -26,10 +25,14 @@ public class StaffServiceImpl implements StaffService {
     private final ZoneService zoneService;
 
     @Override
-    public List < StaffResponse > fetchStaff ( ) {
+    public List < StaffResponse > fetchStaff ( Float projectCoordinator ) {
         List < Staff > staff = staffRepository.findActiveStaffByCoordinator ( );
-        List < StaffResponse > staffResponseList = new ArrayList <> ( );
-        staff.forEach ( e -> staffResponseList.add ( e.toDto ( getStaff( staff,e.getProjectCoordinator() )) ) );
+        List<StaffResponse> staffResponseList = staff.stream()
+                .map(e -> e.toDto(getStaff(staff, e.getProjectCoordinator())))
+                .collect(Collectors.toList());
+        if(projectCoordinator != null){
+            staffResponseList=staffResponseList.stream ().filter ( e->Objects.equals ( e.getProjectCoordinator (),projectCoordinator) ).toList ();
+        }
         return staffResponseList;
     }
 
@@ -46,15 +49,16 @@ public class StaffServiceImpl implements StaffService {
     @Override
     public List< StaffValue > fetchAllProCo(){
         List< ZoneResponse > zoneResponseList = zoneService.fetchAllZones();
-        List<StaffValue> staffValueList = new ArrayList<>();
-        zoneResponseList.forEach(zone -> staffValueList.addAll(zone.getProjectCoordinators()));
-        return staffValueList.stream().distinct().toList();
+        return  zoneResponseList.stream()
+                .flatMap(zone -> zone.getProjectCoordinators().stream())
+                .distinct()
+                .toList();
     }
 
     @Override
     public List< StaffValue > findAllStaffNotInProjectCoordinator(Float staffId){
         List < Map<String,Object> > list = staffRepository.findAllStaffNotInProjectCoordinator ( staffId );
-        return list.stream( ).map( e -> new StaffValue(  ( Double ) e.get( "staffId" ),( String ) e.get( "staffName" ) ) ).collect( Collectors.toList( ) );
+        return list.stream( ).map( e -> new StaffValue(  setStaffId (  e.get( "staffId" )),( String ) e.get( "staffName" ) ) ).collect( Collectors.toList( ) );
     }
 
     String getStaff( List < Staff > staffList , Float staffId ) {
@@ -64,5 +68,20 @@ public class StaffServiceImpl implements StaffService {
                 .map( staff ->staff.getFirstName( ).trim( ) + " " + staff.getLastName( ).trim( )
                  )
                 .orElse( null );
+    }
+
+    Double setStaffId(Object object){
+        if(object instanceof Integer){
+            return Double.valueOf (( Integer ) object);
+        }
+
+        if(object instanceof Double){
+            return ( Double ) object;
+        }
+
+        if(object instanceof Float){
+            return Double.valueOf (( Float ) object);
+        }
+        return null;
     }
 }
