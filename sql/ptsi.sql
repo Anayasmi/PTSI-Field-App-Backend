@@ -28,6 +28,10 @@ ALTER TABLE Project ADD ProjectCoordinator FLOAT NULL;
 ALTER TABLE ZoneMaster ADD ProjectCoordinator VARCHAR(255) NULL;
 ALTER TABLE Staff ADD ProjectCoordinator FLOAT NULL;
 
+ALTER TABLE Users ADD UserType VARCHAR(30) NOT NULL DEFAULT 'USER';
+UPDATE Users SET UserType = 'SUPER_ADMIN' WHERE UserName = 'admin';
+
+
 
 
 

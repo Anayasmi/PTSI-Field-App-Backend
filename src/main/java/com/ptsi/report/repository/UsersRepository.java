@@ -12,4 +12,6 @@ public interface UsersRepository extends JpaRepository< Users,Float > {
 
     Optional < Users > findByUserNameAndPassword ( String userName,String password );
 
+    List<Users> findByIsLoginActive(Float isLoginActive);
+
 }

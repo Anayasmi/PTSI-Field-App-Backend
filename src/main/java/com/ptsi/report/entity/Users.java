@@ -1,6 +1,7 @@
 package com.ptsi.report.entity;
 
 import com.ptsi.report.model.response.LoginResponse;
+import com.ptsi.report.model.response.UserResponse;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
@@ -61,7 +62,15 @@ public class Users {
     @Column ( name = "UpdatedDate" )
     private LocalDateTime updatedDate;
 
+    @Column ( name = "UserType" )
+    private String userType;
+
     public LoginResponse toDTO (Integer userId,String userRole) {
         return new LoginResponse ( firstName.concat ( " " ).concat ( lastName ) , mobileNo , email , role , isLoginActive,userId,userRole );
     }
+
+    public UserResponse toUserDTO () {
+        return new UserResponse ( userId,firstName.trim ()+" "+lastName , mobileNo , email , userType );
+    }
+
 }
