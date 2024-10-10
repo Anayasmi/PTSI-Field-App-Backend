@@ -69,7 +69,7 @@ public class UsersServiceImpl implements UsersService {
 
     @Override
     public List < UserResponse > fetchActiveUsers ( ) {
-        List<Users> users = usersRepository.findByIsLoginActive (-1.0F);
+        List<Users> users = usersRepository.findByIsLoginActive (1.0F);
         return users.stream ().map ( Users::toUserDTO ).collect( Collectors.toList());
     }
 
