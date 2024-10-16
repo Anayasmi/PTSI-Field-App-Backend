@@ -9,19 +9,12 @@ import java.util.Map;
 
 public interface CityRepository extends JpaRepository< City,Float > {
 
-    List< City > findByProjectCoordinator( Float projectCoordinator);
 
     @Query(value = "SELECT \n" +
             "  c.CityId AS cityId, \n" +
-            "  c.CityName AS cityName, \n" +
-            "  c.ProjectCoordinator AS projectCoordinator, \n" +
-            "  CONCAT(\n" +
-            "    TRIM(s.FirstName), \n" +
-            "    ' ', \n" +
-            "    TRIM(s.LastName)\n" +
-            "  ) AS staffName \n" +
+            "  c.CityName AS cityName \n" +
             "FROM \n" +
-            "  City c \n" +
-            "  LEFT JOIN Staff s ON s.StaffId = c.ProjectCoordinator ORDER BY c.UpdatedDate DESC;",nativeQuery = true)
+            "  City c WHERE c.active <> 0 \n" +
+            " ORDER BY c.UpdatedDate DESC;",nativeQuery = true)
     List< Map<String,Object> > getCities();
 }

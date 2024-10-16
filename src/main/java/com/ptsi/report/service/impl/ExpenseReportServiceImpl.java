@@ -5,8 +5,6 @@ import com.ptsi.report.model.response.*;
 import com.ptsi.report.repository.ExpenseReportRepository;
 import com.ptsi.report.service.ExpenseReportService;
 import lombok.RequiredArgsConstructor;
-import org.apache.poi.ss.usermodel.CellStyle;
-import org.apache.poi.ss.usermodel.CreationHelper;
 import org.springframework.stereotype.Service;
 
 import java.sql.Date;
@@ -30,6 +28,13 @@ public class ExpenseReportServiceImpl implements ExpenseReportService {
         String lastDayOfMonth = localDate.withDayOfMonth(localDate.lengthOfMonth()) + " 23:59:59.000";
         String staffName = String.valueOf( staffId );
         return expenseReportRepository.fetchExpenseReport( firstDayOfMonth, lastDayOfMonth, staffName, staffType );
+    }
+
+    public List< Map< String, Object > > filterReport( String startDate,String endDate , Integer projectCoordinator , Integer staffId,Integer city,Integer projectId ) {
+
+        startDate = startDate + " 00:00:00.000";
+        endDate = endDate + " 23:59:59.000";
+        return expenseReportRepository.filterExpenseReport ( startDate,endDate,projectCoordinator,staffId,city,projectId );
     }
 
     public List< ExpenseSheetResponse > fetchExpenseSheet( Integer year, Integer month, Integer staffId,Double openingBalance ) {
@@ -76,11 +81,11 @@ public class ExpenseReportServiceImpl implements ExpenseReportService {
         List< ExpenseSheetResponse > expenseSheetResponses = new ArrayList<>( );
         List< ExpenseSheetDto > expenseSheetDtoStaff = setMissingDateData(expenseSheetDtos,localDates);
         for ( LocalDate localDate : localDates ) {
-            List< ExpenseSheetDto > expenseSheetDtoList = expenseSheetDtoStaff.stream( ).filter( e -> e.getDate( ).equals( localDate ) ).collect( Collectors.toList( ) );
+            List< ExpenseSheetDto > expenseSheetDtoList = expenseSheetDtoStaff.stream( ).filter( e -> e.getDate( ).equals( localDate ) ).toList ();
             LocalDate previousDate=localDate.minusDays( 1 );
             ExpenseSheetResponse expenseSheet=new ExpenseSheetResponse(  );
             if(localDate.getDayOfMonth() != 1) {
-                expenseSheet = expenseSheetResponses.stream( ).filter( e -> e.getDate( ).equals( previousDate ) ).collect( Collectors.toList( ) ).get( 0 );
+                expenseSheet = expenseSheetResponses.stream( ).filter( e -> e.getDate( ).equals( previousDate ) ).toList ().get( 0 );
             }
             List< StaffSheetResponse > staffSheetResponseList = new ArrayList<>( );
 
@@ -88,7 +93,7 @@ public class ExpenseReportServiceImpl implements ExpenseReportService {
             expenseSheetDtoList.forEach( expense -> {
                 StaffSheetResponse staffSheet=new StaffSheetResponse(  );
                 if(localDate.getDayOfMonth() != 1) {
-                    staffSheet = finalExpenseSheet.getStaffSheetResponseList( ).stream( ).filter( e -> e.getStaffId( ).equals( expense.getStaffId( ) ) ).collect( Collectors.toList( ) ).get( 0 );
+                    staffSheet = finalExpenseSheet.getStaffSheetResponseList( ).stream( ).filter( e -> e.getStaffId( ).equals( expense.getStaffId( ) ) ).toList ().get( 0 );
                 }
                 staffSheetResponseList.add( StaffSheetResponse.builder( )
                         .staffName( expense.getStaffName( ) )
@@ -211,12 +216,10 @@ public class ExpenseReportServiceImpl implements ExpenseReportService {
 
     LocalDate getLocalDateValue(Object object){
 
-     if ( object instanceof Timestamp ){
-         Timestamp timestamp = (Timestamp ) object;
+     if ( object instanceof Timestamp timestamp ){
          return timestamp.toLocalDateTime( ).toLocalDate( );
      }
-        if ( object instanceof Date ){
-            Date date = (Date ) object;
+        if ( object instanceof Date date ){
             return date.toLocalDate( );
         }
        return LocalDate.now();

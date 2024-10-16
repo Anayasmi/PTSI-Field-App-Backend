@@ -7,10 +7,9 @@ import lombok.*;
 @AllArgsConstructor
 @NoArgsConstructor
 @Builder
-public class CityResponse {
+public class CommonResponse {
 
-    private Double cityId;
-
-    private String cityName;
-
+    private String key;
+    private String value;
+    private String coordinator;
 }

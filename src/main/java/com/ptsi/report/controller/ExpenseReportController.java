@@ -53,6 +53,28 @@ public class ExpenseReportController {
                 .body ( file );
     }
 
+    @GetMapping(value = "/filter")
+    public ResponseEntity < ? > filterExpenseReport (
+            @RequestParam String startDate,
+            @RequestParam String endDate,
+            @RequestParam(required = false) Integer projectCoordinator,
+            @RequestParam(required = false) Integer staffId,
+            @RequestParam(required = false) Integer city,
+            @RequestParam(required = false) Integer projectId ) {
+
+        log.info( "filter expense report where start date {},end date {}, projectCoordinator {},staff id {},city {} and project id {}",startDate,endDate,projectCoordinator,staffId,city,projectId );
+
+        List < Map < String, Object > > report = expenseReportService.filterReport ( startDate,endDate , projectCoordinator , staffId,city,projectId );
+        String fileName = startDate+"_"+endDate + ".xlsx";
+        log.info( "Excel formatting started");
+        ByteArrayInputStream byteArrayInputStream = StaffSheetExcel.dataToExcel ( report,StaffType.SINGLE );
+        assert byteArrayInputStream != null;
+        InputStreamResource file = new InputStreamResource ( byteArrayInputStream );
+        return ResponseEntity.ok ( ).header ( HttpHeaders.CONTENT_DISPOSITION , "attachment; filename=" + fileName )
+                .contentType ( MediaType.parseMediaType ( "application/vnd.ms-excel" ) )
+                .body ( file );
+    }
+
     @GetMapping("expense-sheet")
     public ResponseEntity < Resource > downloadExpenseSheet (
             @RequestParam Integer year,@RequestParam Integer month,

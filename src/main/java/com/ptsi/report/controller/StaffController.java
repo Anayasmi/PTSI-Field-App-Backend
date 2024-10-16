@@ -1,6 +1,7 @@
 package com.ptsi.report.controller;
 
 import com.ptsi.report.model.request.StaffRequest;
+import com.ptsi.report.model.response.CommonResponse;
 import com.ptsi.report.model.response.StaffResponse;
 import com.ptsi.report.model.response.StaffValue;
 import com.ptsi.report.service.StaffService;
@@ -11,6 +12,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
+import java.util.Map;
 
 @RestController
 @CrossOrigin ( "*" )
@@ -44,6 +46,13 @@ public class StaffController {
     public ResponseEntity<List< StaffValue >> findAllStaffNotInProjectCoordinator(@RequestParam Float staffId){
         log.info( "Fetch all staffs where project coordinator {} is not there",staffId );
         return new ResponseEntity <> ( staffService.findAllStaffNotInProjectCoordinator ( staffId ) , HttpStatus.OK );
+    }
+
+
+    @GetMapping("/filter")
+    public ResponseEntity< Map <String,List< CommonResponse >> > fetchAllRequiredData(){
+        log.info ( "Fetch All Required Data" );
+        return new ResponseEntity <> ( staffService.fetchAllRequiredData (  ) , HttpStatus.OK );
     }
 
 

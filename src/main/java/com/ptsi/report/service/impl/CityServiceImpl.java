@@ -27,7 +27,6 @@ public class CityServiceImpl implements CityService {
     public void updateCity( CityRequest cityRequest ) {
 
         City city = cityRepository.findById( cityRequest.getCityId() ).orElseThrow();
-        city.setProjectCoordinator( cityRequest.getProjectCoordinator() );
         city.setUpdatedDate( LocalDateTime.now() );
         cityRepository.save( city );
     }
@@ -37,8 +36,6 @@ public class CityServiceImpl implements CityService {
 
         List< Map<String,Object> > zoneMasters = cityRepository.getCities( );
         return zoneMasters.stream( ).map( e -> CityResponse.builder( )
-                .staffName( getStringValue(  e.get( "staffName" ) ))
-                .projectCoordinator( getDoubleValue( e.get( "projectCoordinator" ) ))
                 .cityName(  getStringValue(  e.get( "cityName" ) ))
                 .cityId( getDoubleValue( e.get( "cityId" ) ))
                 .build( ) ).collect( Collectors.toList( ) );

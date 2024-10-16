@@ -24,9 +24,6 @@ public class City {
     @Column ( name = "CityName" )
     private String cityName;
 
-    @Column ( name = "projectCoordinator" )
-    private Float projectCoordinator;
-
     @Column ( name = "CreatedBy" )
     private Float createdBy;
 

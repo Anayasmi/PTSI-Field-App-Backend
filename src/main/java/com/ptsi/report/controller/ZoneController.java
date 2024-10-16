@@ -32,6 +32,4 @@ public class ZoneController {
         log.info( "Fetch all zones" );
         return new ResponseEntity<>( zoneService.fetchAllZones(),HttpStatus.OK );
     }
-
-
 }

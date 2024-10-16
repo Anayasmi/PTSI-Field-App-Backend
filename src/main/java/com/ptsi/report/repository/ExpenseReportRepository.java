@@ -22,78 +22,74 @@ public class ExpenseReportRepository {
             if ( staffType == StaffType.SINGLE ) {
 
                 sql = "DECLARE @FromDate DATETIME = '"+fromDate+"';\n" +
+                        "\n" +
                         "DECLARE @ToDate DATETIME = '"+toDate+"';\n" +
+                        "\n" +
                         "DECLARE @StaffId INT = "+staffId+";\n" +
+                        "\n" +
                         "DECLARE @ColumnList NVARCHAR(MAX);\n" +
                         "\n" +
                         "-- Generate dynamic column list for expense categories\n" +
-                        "SELECT @ColumnList = STRING_AGG(\n" +
-                        "    'MAX(CASE WHEN EX.ExpenseName = ''' + REPLACE(ExpenseName, '''', '''''') + ''' THEN SQ.ActualAmount ELSE 0 END) AS [' + LEFT(ExpenseName, 28) + ']', \n" +
-                        "    ', '\n" +
-                        ")\n" +
+                        "\n" +
+                        "SELECT @ColumnList = STRING_AGG('MAX(CASE WHEN EX.ExpenseName = ''' + REPLACE(ExpenseName, '''', '''''') + ''' THEN SQ.ActualAmount ELSE 0 END) AS [' + LEFT(ExpenseName, 28) + ']', ', ')\n" +
                         "FROM ExpenseCategory;\n" +
                         "\n" +
                         "DECLARE @Sql NVARCHAR(MAX);\n" +
-                        "SET @Sql = '\n" +
-                        "SELECT DISTINCT\n" +
-                        "    DP.DPRId AS ''DPR No.'',\n" +
-                        "    DP.Date AS ''Date'',\n" +
-                        "    ISNULL(PF.PortionName, '''') AS ''Floor Level'',\n" +
-                        "    ISNULL(P.ProjectNumber, '''') AS ''Project No.'',\n" +
-                        "    ISNULL(P.ProjectName, '''') AS ''Project'',\n" +
-                        "    ISNULL(CT.CityName, '''') AS ''City'',\n" +
-                        "    ISNULL(CT.ProjectCoordinatorName, '''') AS ''Project Coordinator'',\n" +
-                        "    CONCAT(S.FirstName, '' '', S.LastName) AS ''Field Staff Name'',\n" +
-                        "    ISNULL(SDE.ActualExpense, 0) AS ''Actual Expense'',\n" +
-                        "    DS.Status AS ''DPR Status'',\n" +
-                        "    ' + @ColumnList + ',\n" +
-                        "    DP.TotalActualExpense AS ''Day Total''\n" +
-                        "FROM Staff S\n" +
-                        "JOIN StaffExpenseTransaction ST ON S.StaffId = ST.StaffId \n" +
-                        "    AND S.StaffId = @StaffId \n" +
-                        "JOIN DailyProgressReport DP ON DP.FilledBy = S.StaffId \n" +
-                        "    AND DP.Date BETWEEN @FromDate AND @ToDate\n" +
-                        "LEFT JOIN Project P ON P.ProjectId = DP.ProjectId\n" +
-                        "LEFT JOIN (\n" +
-                        "    SELECT c.CityId, c.CityName,\n" +
-                        "           CONCAT(TRIM(s.FirstName), '' '', TRIM(s.LastName)) AS ProjectCoordinatorName\n" +
-                        "    FROM City c\n" +
-                        "    LEFT JOIN Staff s ON s.StaffId = @StaffId -- Adjust the column name if necessary\n" +
-                        ") CT ON CT.CityId = P.CityId\n" +
-                        "LEFT JOIN PortionFloor PF ON PF.PortionId = DP.PortionId\n" +
-                        "LEFT JOIN (\n" +
-                        "    SELECT DPRId, SUM(ActualAmount) AS ActualExpense\n" +
-                        "    FROM DPRExpense\n" +
-                        "    GROUP BY DPRId\n" +
-                        ") SDE ON SDE.DPRId = DP.DPRId\n" +
-                        "LEFT JOIN (\n" +
-                        "    SELECT DPRId, ExpenseCategoryId, ActualAmount\n" +
-                        "    FROM DPRExpense\n" +
-                        ") SQ ON SQ.DPRId = DP.DPRId\n" +
-                        "LEFT JOIN ExpenseCategory EX ON SQ.ExpenseCategoryId = EX.ExpenseCategoryId\n" +
-                        "JOIN DPRStatus DS ON DS.StatusId = DP.DPRStatus\n" +
-                        "GROUP BY \n" +
-                        "    DP.DPRId,\n" +
-                        "    DP.Date,\n" +
-                        "    P.ProjectNumber,  \n" +
-                        "    P.ProjectName,\n" +
-                        "    PF.PortionName,\n" +
-                        "    CT.CityName,\n" +
-                        "    CT.ProjectCoordinatorName,\n" +
-                        "    CONCAT(S.FirstName, '' '', S.LastName),\n" +
-                        "    DS.Status,\n" +
-                        "    SDE.ActualExpense,\n" +
-                        "    DP.TotalActualExpense\n" +
-                        "ORDER BY DP.Date ASC;';\n" +
                         "\n" +
-                        "-- Print the final SQL query for debugging\n" +
+                        "\n" +
+                        "SET @Sql = 'SELECT DISTINCT\n" +
+                        "\t\t\tDP.DPRId AS ''DPR No.'',\n" +
+                        "\t\t\tDP.Date AS ''Date'',\n" +
+                        "\t\t\tISNULL(PF.PortionName, '''') AS ''Floor Level'',\n" +
+                        "\t\t\tISNULL(P.ProjectNumber, '''') AS ''Project No.'',\n" +
+                        "\t\t\tISNULL(P.ProjectName, '''') AS ''Project'',\n" +
+                        "\t\t\tISNULL(CT.CityName, '''') AS ''City'',\n" +
+                        "\t\t\tCONCAT(pc.FirstName, '' '', pc.LastName) AS ''Project Coordinator'',\n" +
+                        "\t\t\tCONCAT(S.FirstName, '' '', S.LastName) AS ''Field Staff Name'',\n" +
+                        "\t\t\tISNULL(SDE.ActualExpense, 0) AS ''Actual Expense'',\n" +
+                        "\t\t\tDS.Status AS ''DPR Status'',\n" +
+                        "\t\t\t' + @ColumnList + ',\n" +
+                        "\t\t\tDP.TotalActualExpense AS ''Day Total''\n" +
+                        "\t\t\tFROM Staff S\n" +
+                        "\t\t\tLEFT JOIN Staff pc ON s.ProjectCoordinator = pc.StaffId\n" +
+                        "\t\t\tJOIN StaffExpenseTransaction ST ON S.StaffId = ST.StaffId \n" +
+                        "\t\t\tAND S.StaffId = @StaffId \n" +
+                        "\t\t\tJOIN DailyProgressReport DP ON DP.FilledBy = S.StaffId \n" +
+                        "\t\t\tAND DP.Date BETWEEN @FromDate AND @ToDate LEFT JOIN Project P ON P.ProjectId = DP.ProjectId\n" +
+                        "\t\t\tLEFT JOIN City CT ON CT.CityId = P.CityId\n" +
+                        "\t\t\tLEFT JOIN PortionFloor PF ON PF.PortionId = DP.PortionId\n" +
+                        "\t\t\tLEFT JOIN (\n" +
+                        "\t\t\t\tSELECT DPRId, SUM(ActualAmount) AS ActualExpense\n" +
+                        "\t\t\t\tFROM DPRExpense\n" +
+                        "\t\t\t\tGROUP BY DPRId\n" +
+                        "\t\t\t\t) SDE ON SDE.DPRId = DP.DPRId\n" +
+                        "\t\t\tLEFT JOIN (\n" +
+                        "\t\t\t\tSELECT DPRId, ExpenseCategoryId, ActualAmount\n" +
+                        "\t\t\t\tFROM DPRExpense\n" +
+                        "\t\t\t\t) SQ ON SQ.DPRId = DP.DPRId\n" +
+                        "\t\t\tLEFT JOIN ExpenseCategory EX ON SQ.ExpenseCategoryId = EX.ExpenseCategoryId\n" +
+                        "\t\t\tJOIN DPRStatus DS ON DS.StatusId = DP.DPRStatus\n" +
+                        "\t\t\tGROUP BY\n" +
+                        "\t\t\t\tDP.DPRId, \n" +
+                        "\t\t\t\tDP.Date,\n" +
+                        "\t\t\t\tP.ProjectNumber, \n" +
+                        "\t\t\t\tP.ProjectName,\n" +
+                        "\t\t\t\tPF.PortionName,\n" +
+                        "\t\t\t\tCT.CityName,\n" +
+                        "\t\t\t\tCONCAT(pc.FirstName, '' '', pc.LastName),\n" +
+                        "\t\t\t\tCONCAT(S.FirstName, '' '', S.LastName),\n" +
+                        "\t\t\t\tDS.Status,\n" +
+                        "\t\t\t\tSDE.ActualExpense,\n" +
+                        "\t\t\t\tDP.TotalActualExpense\n" +
+                        "\t\t\t\tORDER BY DP.Date ASC;';\n" +
+                        "\n" +
                         "PRINT @Sql;\n" +
                         "\n" +
                         "EXEC sp_executesql @Sql,\n" +
-                        "    N'@FromDate DATETIME, @ToDate DATETIME, @StaffId INT',\n" +
-                        "    @FromDate,\n" +
-                        "    @ToDate,\n" +
-                        "    @StaffId;\n";
+                        "     N'@FromDate DATETIME, @ToDate DATETIME, @StaffId INT',\n" +
+                        "      @FromDate,\n" +
+                        "      @ToDate,\n" +
+                        "      @StaffId;";
             } else {
                 sql="DECLARE @FromDate DATETIME = '"+fromDate+"';\n" +
                         "\n" +
@@ -352,4 +348,127 @@ public class ExpenseReportRepository {
             return Collections.emptyList( );
         }
     }
+
+    public List < Map < String, Object > > filterExpenseReport ( String startDate , String endDate , Integer projectCoordinator , Integer staffId , Integer city , Integer projectId ) {
+        try {
+
+            String sql = "DECLARE @FromDate DATETIME = '" + startDate + "';\n" +
+                    "\n" +
+                    "DECLARE @ToDate DATETIME = '" + endDate + "';\n" +
+                    "\n" +
+                    "DECLARE @ProjectId INT = " + projectId + ";\n" +
+                    "\n" +
+                    "DECLARE @StaffId INT = " + staffId + ";\n" +
+                    "\n" +
+                    "DECLARE @ProjectCoordinator INT = " + projectCoordinator + ";\n" +
+                    "\n" +
+                    "DECLARE @CityId INT = " + city + ";\n" +
+                    "\n" +
+                    "DECLARE @ColumnList NVARCHAR(MAX);\n" +
+                    "\n" +
+                    "-- Generate dynamic column list for expense categories\n" +
+                    "\n" +
+                    "SELECT @ColumnList = String_agg('MAX(CASE WHEN EX.ExpenseName = ''' + Replace(expensename, '''', '''''') + ''' THEN SQ.ActualAmount ELSE 0 END) AS [' + LEFT(expensename, 28) + ']', ', ')\n" +
+                    "FROM expensecategory;\n" +
+                    "\n" +
+                    "DECLARE @Sql NVARCHAR(MAX);\n" +
+                    "\n" +
+                    "\n" +
+                    "SET @Sql = 'SELECT DISTINCT DP.DPRId AS ''DPR No.'',\n" +
+                    "\t\t\tDP.Date AS ''Date'',\n" +
+                    "\t\t\tISNULL(PF.PortionName, '''') AS ''Floor Level'',\n" +
+                    "\t\t\tISNULL(P.ProjectNumber, '''') AS ''Project No.'',\n" +
+                    "\t\t\tISNULL(P.ProjectName, '''') AS ''Project'',\n" +
+                    "\t\t\tISNULL(CT.CityName, '''') AS ''City'',\n" +
+                    "\t\t\tCONCAT(pc.FirstName, '' '', pc.LastName) AS ''Project Coordinator'',\n" +
+                    "\t\t\tCONCAT(S.FirstName, '' '', S.LastName) AS ''Field Staff Name'',\n" +
+                    "\t\t\tISNULL(SDE.ActualExpense, 0) AS ''Actual Expense'',\n" +
+                    "\t\t\tDS.Status AS ''DPR Status'', ' + @ColumnList + ',\n" +
+                    "\t\t\tDP.TotalActualExpense AS ''Day Total'' \n" +
+                    "\t\t\tFROM Staff S \n" +
+                    "\t\t\tLEFT JOIN Staff pc ON S.ProjectCoordinator = pc.StaffId \n" +
+                    "\t\t\tJOIN StaffExpenseTransaction ST ON S.StaffId = ST.StaffId  \n" +
+                    "\t\t\tJOIN DailyProgressReport DP ON DP.FilledBy = S.StaffId  AND DP.Date BETWEEN @FromDate AND @ToDate \n" +
+                    "\t\t\tLEFT JOIN Project P ON P.ProjectId = DP.ProjectId \n" +
+                    "\t\t\tLEFT JOIN City CT ON CT.CityId = P.CityId \n" +
+                    "\t\t\tLEFT JOIN PortionFloor PF ON PF.PortionId = DP.PortionId \n" +
+                    "\t\t\tLEFT JOIN ( SELECT DPRId,\n" +
+                    "\t\t\t\t\t\tSUM(ActualAmount) AS ActualExpense \n" +
+                    "\t\t\t\t\t\tFROM DPRExpense GROUP BY DPRId ) SDE ON SDE.DPRId = DP.DPRId \n" +
+                    "\t\t\tLEFT JOIN ( SELECT DPRId,\n" +
+                    "\t\t\t\t\t\tExpenseCategoryId, \n" +
+                    "\t\t\t\t\t\tActualAmount \n" +
+                    "\t\t\t\t\t\tFROM DPRExpense ) SQ ON SQ.DPRId = DP.DPRId \n" +
+                    "\t\t\tLEFT JOIN ExpenseCategory EX ON SQ.ExpenseCategoryId = EX.ExpenseCategoryId \n" +
+                    "\t\t\tJOIN DPRStatus DS ON DS.StatusId = DP.DPRStatus\t\t\n" +
+                    "\t\t\t\n" +
+                    "\t\t\t";
+
+            StringBuilder result = new StringBuilder ();
+            result.append ( "WHERE " );
+
+            if ( projectCoordinator != null ) {
+                result.append ( "S.StaffId IN(SELECT DISTINCT s.StaffId FROM Staff s\n" +
+                        "                        LEFT JOIN Users u ON u.FirstName = s.FirstName AND u.LastName = s.LastName \n" +
+                        "                        WHERE s.ProjectCoordinator = @ProjectCoordinator\n" +
+                        "                        AND s.StaffId IS NOT NULL\n" +
+                        "                        AND u.IsLoginActive <> 0\n" +
+                        "                        AND s.FirstName NOT LIKE ''%Test%''\n" +
+                        "                        AND s.FirstName NOT LIKE ''%Admin%''\n" +
+                        "                        AND s.Active <> 0)\n" +
+                        "                        AND (P.ProjectId IS NULL OR CT.CityId IS NULL OR CT.CityId IN ( SELECT DISTINCT c.CityId  \n" +
+                        "                        FROM ZoneMaster z  LEFT JOIN City c ON c.ZoneId = z.ZoneId \n" +
+                        "                        WHERE z.ProjectCoordinator LIKE ''%'' + CAST(@ProjectCoordinator AS VARCHAR) + ''%'' ))" ).append ( " AND " );
+            }
+            if ( staffId != null ) {
+                result.append ( "S.StaffId = @StaffId" ).append ( " AND " );
+            }
+            if ( city != null ) {
+                result.append ( "CT.CityId = @CityId" ).append ( " AND " );
+            }
+            if ( projectId != null ) {
+                result.append ( "DP.ProjectId=@ProjectID" ).append ( " AND " );
+            }
+
+
+            if ( !Objects.equals ( result.toString () , "WHERE " ) ) {
+                result.setLength ( result.length () - 4 );
+                sql = sql + result.toString ();
+            }
+
+
+            sql = sql + ( "\n" +
+                    "\t\t\tGROUP BY \n" +
+                    "\t\t\t\tDP.DPRId,\n" +
+                    "\t\t\t\tDP.Date,\n" +
+                    "\t\t\t\tP.ProjectNumber,\n" +
+                    "\t\t\t\tP.ProjectName,\n" +
+                    "\t\t\t\tPF.PortionName,\n" +
+                    "\t\t\t\tCT.CityName,\n" +
+                    "\t\t\t\tCONCAT(pc.FirstName, '' '', pc.LastName),\n" +
+                    "\t\t\t\tCONCAT(S.FirstName, '' '', S.LastName),\n" +
+                    "\t\t\t\tDS.Status, \n" +
+                    "\t\t\t\tSDE.ActualExpense,\n" +
+                    "\t\t\t\tDP.TotalActualExpense\n" +
+                    "\t\t\tORDER BY DP.Date ASC;';\n" +
+                    "\n" +
+                    "PRINT @Sql;\n" +
+                    "\n" +
+                    "-- Execute the dynamically generated SQL query\n" +
+                    "EXEC Sp_executesql @Sql,\n" +
+                    "     N'@FromDate DATETIME, @ToDate DATETIME,@ProjectCoordinator INT,@StaffId INT,@ProjectId INT,@CityId INT',\n" +
+                    "      @FromDate,\n" +
+                    "      @ToDate,\n" +
+                    "      @ProjectCoordinator,\n" +
+                    "      @StaffId,\n" +
+                    "      @ProjectId,\n" +
+                    "      @CityId;" );
+
+            return jdbcTemplate.queryForList ( sql );
+        } catch ( Exception e ) {
+            e.printStackTrace ();
+            return Collections.emptyList ();
+        }
+    }
+
 }
