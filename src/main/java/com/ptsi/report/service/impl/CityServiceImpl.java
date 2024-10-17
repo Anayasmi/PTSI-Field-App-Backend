@@ -48,7 +48,11 @@ public class CityServiceImpl implements CityService {
         if ( object instanceof Float ){
             return Double.valueOf( ( Float ) object);
         }
-        return 0.0;
+
+        if ( object instanceof Integer ){
+            return( ( Integer ) object ).doubleValue ();
+        }
+        return Double.valueOf( ( Float ) object);
     }
 
 
