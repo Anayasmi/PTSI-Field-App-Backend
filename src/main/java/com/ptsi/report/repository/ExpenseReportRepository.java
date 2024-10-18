@@ -282,7 +282,7 @@ public class ExpenseReportRepository {
                     "   GROUP BY CreatedBy,\n" +
                     "            ApprovedOn,\n" +
                     "            ApprovedBy) ARE ON ARE.CreatedBy = s.StaffId\n" +
-                    "AND ARE.ApprovedOn = DR.[Date]\n" +
+                    "AND CAST(ARE.ApprovedOn AS DATE) = DR.[Date]\n" +
                     "LEFT JOIN\n" +
                     "  (SELECT FilledBy,\n" +
                     "          [Date],\n" +
@@ -291,7 +291,7 @@ public class ExpenseReportRepository {
                     "   FROM DailyProgressReport\n" +
                     "   GROUP BY FilledBy,\n" +
                     "            [Date]) DP ON DP.FilledBy = s.StaffId\n" +
-                    "AND DP.[Date] = DR.[Date]\n" +
+                    "AND CAST(DP.Date AS DATE) = DR.[Date]\n" +
                     "GROUP BY s.StaffId,\n" +
                     "         s.FirstName,\n" +
                     "         s.LastName,\n" +

@@ -175,7 +175,7 @@ public interface OpeningExpenseRepository extends JpaRepository< MonthlyOpeningE
             "ISNULL(SUM(TRY_CAST(Request_Amount_Cash AS float)), 0) AS amountCash\n" +
             "FROM DailyProgressReport\n" +
             "GROUP BY FilledBy, Date) DP ON DP.FilledBy = s.StaffId\n" +
-            "AND DP.Date = DR.[Date]\n" +
+            "AND CAST(DP.Date AS DATE) = DR.[Date]\n" +
             "LEFT JOIN\n" +
             "(SELECT CreatedBy,\n" +
             "ApprovedOn,\n" +
