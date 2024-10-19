@@ -335,7 +335,7 @@ public class ExpenseReportRepository {
                     "SELECT DR.[Date] AS date,\n" +
                     "       ISNULL(SUM(ARE.ApprovedAmount), 0) AS advanceAmount \n" +
                     "FROM DateRange DR\n" +
-                    "LEFT JOIN AdvanceRequestExpense ARE ON DR.[Date] = ARE.ApprovedOn\n" +
+                    "LEFT JOIN AdvanceRequestExpense ARE ON DR.[Date] = CAST(ARE.ApprovedOn AS DATE)\n" +
                     "AND ARE.CreatedBy = @ProjectCoordinatorId\n" +
                     "AND (ARE.ApprovedBy = 1\n" +
                     "     OR ARE.ApprovedBy = 7)\n" +
